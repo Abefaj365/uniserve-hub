@@ -77,15 +77,24 @@ export default function AdminDashboard() {
           </Card>
           <Card className="border-border/50 shadow-sm">
             <CardHeader><CardTitle className="font-display text-base">Status Distribution</CardTitle></CardHeader>
-            <CardContent className="flex items-center justify-center">
-              <ResponsiveContainer width="100%" height={250}>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={220}>
                 <PieChart>
-                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={55} outerRadius={90} dataKey="value" paddingAngle={2}>
                     {pieData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                   </Pie>
                   <Tooltip />
                 </PieChart>
               </ResponsiveContainer>
+              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mt-2">
+                {pieData.map((entry) => (
+                  <div key={entry.name} className="flex items-center gap-1.5 text-xs">
+                    <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: entry.color }} />
+                    <span className="text-muted-foreground">{entry.name}</span>
+                    <span className="font-semibold text-foreground">{entry.value}</span>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>
