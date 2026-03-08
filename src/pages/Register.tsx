@@ -45,22 +45,9 @@ export default function Register() {
     e.preventDefault();
     setLoading(true);
 
-    // Check for duplicate student_id or employee_id
-    if (role === "student" && studentId.trim()) {
-      const { data: existing } = await supabase.from("profiles").select("id").eq("student_id", studentId.trim()).limit(1);
-      if (existing && existing.length > 0) {
-        setLoading(false);
-        toast({ title: "Duplicate Student ID", description: "This Student ID is already registered. Please use a different one.", variant: "destructive" });
-        return;
-      }
-    } else if (role !== "student" && employeeId.trim()) {
-      const { data: existing } = await supabase.from("profiles").select("id").eq("employee_id", employeeId.trim()).limit(1);
-      if (existing && existing.length > 0) {
-        setLoading(false);
-        toast({ title: "Duplicate Employee ID", description: "This Employee ID is already registered. Please use a different one.", variant: "destructive" });
-        return;
-      }
-    }
+    // Check for duplicate student_id or employee_id using a service-side approach
+    // Note: RLS may prevent unauthenticated reads, so we rely on the DB unique constraint
+    // and handle the error gracefully after signup
 
     const metadata: Record<string, string> = {
       full_name: `${firstName} ${lastName}`,

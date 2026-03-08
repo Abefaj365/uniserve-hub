@@ -39,10 +39,11 @@ export default function AdminSettings() {
     setMfaLoading(false);
   };
 
+  const [showMFASetup, setShowMFASetup] = useState(false);
+
   const handleToggleMFA = async (enabled: boolean) => {
     if (enabled) {
-      // Redirect to MFA setup - we'll force re-check by reloading
-      window.location.reload();
+      setShowMFASetup(true);
     } else {
       // Unenroll all TOTP factors
       setMfaToggling(true);
@@ -55,6 +56,12 @@ export default function AdminSettings() {
       setMfaToggling(false);
       toast({ title: "2FA Disabled", description: "Two-factor authentication has been turned off." });
     }
+  };
+
+  const handleMFASetupComplete = () => {
+    setShowMFASetup(false);
+    setMfaEnabled(true);
+    toast({ title: "2FA Enabled!", description: "Two-factor authentication is now active." });
   };
 
   const handleUpdateProfile = async () => {

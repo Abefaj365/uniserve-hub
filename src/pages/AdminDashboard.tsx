@@ -68,7 +68,7 @@ export default function AdminDashboard() {
           <StatsCard title="In Progress" value={inProgress} icon={AlertTriangle} colorClass="bg-info/10 text-info" />
           <StatsCard title="Resolved" value={resolved} icon={CheckCircle} colorClass="bg-success/10 text-success" />
           <StatsCard title="Departments" value={departments?.length ?? 0} icon={Building2} colorClass="bg-accent/10 text-accent" />
-          <StatsCard title="Students" value={total} icon={Users} colorClass="bg-primary/10 text-primary" />
+          <StatsCard title="Total Users" value={userCount?.length ?? 0} icon={Users} colorClass="bg-primary/10 text-primary" />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
