@@ -93,6 +93,9 @@ export default function AdminUsers() {
 
   const currentAdminId = user?.id;
   const [selectedUser, setSelectedUser] = useState<any>(null);
+
+  return (
+    <>
     <DashboardLayout role="admin" title="Manage Users">
       <div className="space-y-6 animate-fade-in">
         {isLoading ? (
