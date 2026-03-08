@@ -70,6 +70,9 @@ export default function Login() {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Logging in..." : "Login"}
             </Button>
+            <p className="text-center text-sm">
+              <Link to="/forgot-password" className="text-sm text-muted-foreground hover:text-primary hover:underline">Forgot your password?</Link>
+            </p>
             <p className="text-center text-sm text-muted-foreground">
               Don't have an account? <Link to="/register" className="font-medium text-primary hover:underline">Register</Link>
             </p>

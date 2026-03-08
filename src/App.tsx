@@ -52,6 +52,8 @@ const AppRoutes = () => (
       <Route path="/" element={<Index />} />
       <Route path="/login" element={<AuthRedirect><Login /></AuthRedirect>} />
       <Route path="/register" element={<AuthRedirect><Register /></AuthRedirect>} />
+      <Route path="/forgot-password" element={<AuthRedirect><ForgotPassword /></AuthRedirect>} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/documentation" element={<Documentation />} />
       <Route path="/student" element={<ProtectedRoute allowedRoles={["student"]}><StudentDashboard /></ProtectedRoute>} />
       <Route path="/student/submit" element={<ProtectedRoute allowedRoles={["student"]}><SubmitComplaint /></ProtectedRoute>} />

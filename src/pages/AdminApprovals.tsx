@@ -60,7 +60,7 @@ export default function AdminApprovals() {
           <div className="rounded-xl border border-border bg-card p-12 text-center text-muted-foreground">
             <CheckCircle className="h-10 w-10 mx-auto mb-3 text-green-500" />
             <p className="font-medium">No pending approvals</p>
-            <p className="text-sm mt-1">All student registrations have been reviewed.</p>
+            <p className="text-sm mt-1">All registrations have been reviewed.</p>
           </div>
         ) : (
           <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
