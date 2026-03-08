@@ -2,7 +2,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import Navbar from "./components/Navbar";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -23,31 +24,57 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: string[] }) {
+  const { user, role, isLoading } = useAuth();
+  if (isLoading) return <div className="flex items-center justify-center min-h-screen text-muted-foreground">Loading...</div>;
+  if (!user) return <Navigate to="/login" replace />;
+  if (role && !allowedRoles.includes(role)) return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
+function AuthRedirect({ children }: { children: React.ReactNode }) {
+  const { user, role, isLoading } = useAuth();
+  if (isLoading) return <div className="flex items-center justify-center min-h-screen text-muted-foreground">Loading...</div>;
+  if (user && role) {
+    const routes: Record<string, string> = { student: "/student", officer: "/officer", admin: "/admin" };
+    return <Navigate to={routes[role] || "/"} replace />;
+  }
+  return <>{children}</>;
+}
+
+const AppRoutes = () => (
+  <>
+    <Navbar />
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/login" element={<AuthRedirect><Login /></AuthRedirect>} />
+      <Route path="/register" element={<AuthRedirect><Register /></AuthRedirect>} />
+      <Route path="/documentation" element={<Documentation />} />
+      <Route path="/student" element={<ProtectedRoute allowedRoles={["student"]}><StudentDashboard /></ProtectedRoute>} />
+      <Route path="/student/submit" element={<ProtectedRoute allowedRoles={["student"]}><SubmitComplaint /></ProtectedRoute>} />
+      <Route path="/student/complaints" element={<ProtectedRoute allowedRoles={["student"]}><StudentComplaints /></ProtectedRoute>} />
+      <Route path="/officer" element={<ProtectedRoute allowedRoles={["officer"]}><OfficerDashboard /></ProtectedRoute>} />
+      <Route path="/officer/complaints" element={<ProtectedRoute allowedRoles={["officer"]}><OfficerComplaints /></ProtectedRoute>} />
+      <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
+      <Route path="/admin/complaints" element={<ProtectedRoute allowedRoles={["admin"]}><AdminComplaints /></ProtectedRoute>} />
+      <Route path="/admin/departments" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDepartments /></ProtectedRoute>} />
+      <Route path="/admin/users" element={<ProtectedRoute allowedRoles={["admin"]}><AdminUsers /></ProtectedRoute>} />
+      <Route path="/admin/reports" element={<ProtectedRoute allowedRoles={["admin"]}><AdminReports /></ProtectedRoute>} />
+      <Route path="/admin/settings" element={<ProtectedRoute allowedRoles={["admin"]}><AdminSettings /></ProtectedRoute>} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  </>
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/documentation" element={<Documentation />} />
-          <Route path="/student" element={<StudentDashboard />} />
-          <Route path="/student/submit" element={<SubmitComplaint />} />
-          <Route path="/student/complaints" element={<StudentComplaints />} />
-          <Route path="/officer" element={<OfficerDashboard />} />
-          <Route path="/officer/complaints" element={<OfficerComplaints />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/complaints" element={<AdminComplaints />} />
-          <Route path="/admin/departments" element={<AdminDepartments />} />
-          <Route path="/admin/users" element={<AdminUsers />} />
-          <Route path="/admin/reports" element={<AdminReports />} />
-          <Route path="/admin/settings" element={<AdminSettings />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

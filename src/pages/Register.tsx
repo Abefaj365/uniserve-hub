@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,13 +6,37 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { GraduationCap } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Register() {
   const navigate = useNavigate();
+  const { signUp } = useAuth();
+  const { toast } = useToast();
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [studentId, setStudentId] = useState("");
+  const [email, setEmail] = useState("");
+  const [department, setDepartment] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    navigate("/student");
+    setLoading(true);
+    const { error } = await signUp(email, password, {
+      full_name: `${firstName} ${lastName}`,
+      student_id: studentId,
+      department,
+      role: "student",
+    });
+    setLoading(false);
+    if (error) {
+      toast({ title: "Registration Failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Registration Successful!", description: "You can now log in with your credentials." });
+    navigate("/login");
   };
 
   return (
@@ -29,39 +54,41 @@ export default function Register() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label>First Name</Label>
-                <Input placeholder="First name" />
+                <Input placeholder="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
               </div>
               <div className="space-y-2">
                 <Label>Last Name</Label>
-                <Input placeholder="Last name" />
+                <Input placeholder="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
               </div>
             </div>
             <div className="space-y-2">
               <Label>Student ID</Label>
-              <Input placeholder="e.g., STU-2023-001" />
+              <Input placeholder="e.g., STU-2023-001" value={studentId} onChange={(e) => setStudentId(e.target.value)} required />
             </div>
             <div className="space-y-2">
               <Label>Email</Label>
-              <Input type="email" placeholder="your@bgctub.ac.bd" />
+              <Input type="email" placeholder="your@bgctub.ac.bd" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
             <div className="space-y-2">
               <Label>Department</Label>
-              <Select>
+              <Select value={department} onValueChange={setDepartment}>
                 <SelectTrigger><SelectValue placeholder="Select department" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="cse">Computer Science & Engineering</SelectItem>
-                  <SelectItem value="eee">Electrical & Electronic Engineering</SelectItem>
-                  <SelectItem value="bba">Business Administration</SelectItem>
-                  <SelectItem value="english">English</SelectItem>
-                  <SelectItem value="pharmacy">Pharmacy</SelectItem>
+                  <SelectItem value="CSE">Computer Science & Engineering</SelectItem>
+                  <SelectItem value="EEE">Electrical & Electronic Engineering</SelectItem>
+                  <SelectItem value="BBA">Business Administration</SelectItem>
+                  <SelectItem value="English">English</SelectItem>
+                  <SelectItem value="Pharmacy">Pharmacy</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <Label>Password</Label>
-              <Input type="password" placeholder="••••••••" />
+              <Input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
             </div>
-            <Button type="submit" className="w-full">Register</Button>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Registering..." : "Register"}
+            </Button>
             <p className="text-center text-sm text-muted-foreground">
               Already have an account? <Link to="/login" className="font-medium text-primary hover:underline">Login</Link>
             </p>

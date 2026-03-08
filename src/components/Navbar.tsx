@@ -2,13 +2,17 @@ import { Link, useLocation } from "react-router-dom";
 import { GraduationCap, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Navbar() {
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const { user, role, signOut } = useAuth();
   const isDashboard = location.pathname.startsWith("/student") || location.pathname.startsWith("/admin") || location.pathname.startsWith("/officer");
 
   if (isDashboard) return null;
+
+  const dashboardPath = role === "admin" ? "/admin" : role === "officer" ? "/officer" : "/student";
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border/50 bg-card/80 backdrop-blur-md">
@@ -23,10 +27,17 @@ export default function Navbar() {
         <div className="hidden items-center gap-6 md:flex">
           <Link to="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Home</Link>
           <Link to="/documentation" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Documentation</Link>
-          <Link to="/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Login</Link>
-          <Link to="/register">
-            <Button size="sm">Register</Button>
-          </Link>
+          {user ? (
+            <>
+              <Link to={dashboardPath} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Dashboard</Link>
+              <Button size="sm" variant="outline" onClick={signOut}>Logout</Button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Login</Link>
+              <Link to="/register"><Button size="sm">Register</Button></Link>
+            </>
+          )}
         </div>
 
         <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setOpen(!open)}>
@@ -39,10 +50,17 @@ export default function Navbar() {
           <div className="flex flex-col gap-3">
             <Link to="/" className="text-sm font-medium" onClick={() => setOpen(false)}>Home</Link>
             <Link to="/documentation" className="text-sm font-medium" onClick={() => setOpen(false)}>Documentation</Link>
-            <Link to="/login" className="text-sm font-medium" onClick={() => setOpen(false)}>Login</Link>
-            <Link to="/register" onClick={() => setOpen(false)}>
-              <Button size="sm" className="w-full">Register</Button>
-            </Link>
+            {user ? (
+              <>
+                <Link to={dashboardPath} className="text-sm font-medium" onClick={() => setOpen(false)}>Dashboard</Link>
+                <Button size="sm" variant="outline" className="w-full" onClick={() => { signOut(); setOpen(false); }}>Logout</Button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="text-sm font-medium" onClick={() => setOpen(false)}>Login</Link>
+                <Link to="/register" onClick={() => setOpen(false)}><Button size="sm" className="w-full">Register</Button></Link>
+              </>
+            )}
           </div>
         </div>
       )}
