@@ -12,6 +12,7 @@ import Documentation from "./pages/Documentation";
 import StudentDashboard from "./pages/StudentDashboard";
 import SubmitComplaint from "./pages/SubmitComplaint";
 import StudentComplaints from "./pages/StudentComplaints";
+import AllComplaints from "./pages/AllComplaints";
 import OfficerDashboard from "./pages/OfficerDashboard";
 import OfficerComplaints from "./pages/OfficerComplaints";
 import AdminDashboard from "./pages/AdminDashboard";
