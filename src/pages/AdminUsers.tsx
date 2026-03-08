@@ -8,7 +8,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Ban, Trash2, ShieldCheck } from "lucide-react";
+import { Ban, Trash2, ShieldCheck, Eye } from "lucide-react";
+import UserDetailDialog from "@/components/UserDetailDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -80,8 +81,10 @@ export default function AdminUsers() {
   });
 
   const currentAdminId = user?.id;
+  const [selectedUser, setSelectedUser] = useState<any>(null);
 
   return (
+    <>
     <DashboardLayout role="admin" title="Manage Users">
       <div className="space-y-6 animate-fade-in">
         {isLoading ? (
@@ -123,6 +126,15 @@ export default function AdminUsers() {
                           <span className="text-xs text-muted-foreground">You</span>
                         ) : (
                           <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 gap-1"
+                              onClick={() => setSelectedUser(u)}
+                            >
+                              <Eye className="h-3.5 w-3.5" />
+                              View
+                            </Button>
                             <Button
                               size="sm"
                               variant={isBanned ? "outline" : "secondary"}
@@ -171,5 +183,11 @@ export default function AdminUsers() {
         )}
       </div>
     </DashboardLayout>
+    <UserDetailDialog
+      user={selectedUser}
+      open={!!selectedUser}
+      onOpenChange={(open) => { if (!open) setSelectedUser(null); }}
+    />
+    </>
   );
 }
