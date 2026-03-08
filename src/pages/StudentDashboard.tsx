@@ -51,7 +51,7 @@ export default function StudentDashboard() {
           {isLoading ? (
             <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-12 w-full" />)}</div>
           ) : complaints && complaints.length > 0 ? (
-            <ComplaintsTable data={complaints.slice(0, 5)} />
+            <ComplaintsTable data={complaints.slice(0, 5)} showActions />
           ) : (
             <div className="text-center py-8 text-muted-foreground">No complaints yet. Submit your first complaint!</div>
           )}
