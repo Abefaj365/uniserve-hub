@@ -247,6 +247,7 @@ export type Database = {
           employee_id: string | null
           full_name: string
           id: string
+          rejection_reason: string | null
           student_id: string | null
           updated_at: string
           user_id: string
@@ -259,6 +260,7 @@ export type Database = {
           employee_id?: string | null
           full_name?: string
           id?: string
+          rejection_reason?: string | null
           student_id?: string | null
           updated_at?: string
           user_id: string
@@ -271,6 +273,7 @@ export type Database = {
           employee_id?: string | null
           full_name?: string
           id?: string
+          rejection_reason?: string | null
           student_id?: string | null
           updated_at?: string
           user_id?: string
