@@ -143,7 +143,7 @@ export default function AdminUsers() {
                         {isSelf ? (
                           <span className="text-xs text-muted-foreground">You</span>
                         ) : (
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 flex-wrap">
                             <Button
                               size="sm"
                               variant="outline"
@@ -153,16 +153,41 @@ export default function AdminUsers() {
                               <Eye className="h-3.5 w-3.5" />
                               View
                             </Button>
-                            <Button
-                              size="sm"
-                              variant={isBanned ? "outline" : "secondary"}
-                              className="h-8 gap-1"
-                              onClick={() => banUser.mutate({ userId: u.user_id, currentStatus: u.approval_status })}
-                              disabled={banUser.isPending}
-                            >
-                              {isBanned ? <ShieldCheck className="h-3.5 w-3.5" /> : <Ban className="h-3.5 w-3.5" />}
-                              {isBanned ? "Unban" : "Ban"}
-                            </Button>
+                            {(u.approval_status === "pending" || u.approval_status === "rejected") && (
+                              <Button
+                                size="sm"
+                                className="h-8 gap-1"
+                                onClick={() => updateApproval.mutate({ userId: u.user_id, status: "approved" })}
+                                disabled={updateApproval.isPending}
+                              >
+                                <CheckCircle className="h-3.5 w-3.5" />
+                                Approve
+                              </Button>
+                            )}
+                            {u.approval_status === "pending" && (
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                className="h-8 gap-1"
+                                onClick={() => updateApproval.mutate({ userId: u.user_id, status: "rejected" })}
+                                disabled={updateApproval.isPending}
+                              >
+                                <XCircle className="h-3.5 w-3.5" />
+                                Reject
+                              </Button>
+                            )}
+                            {u.approval_status === "approved" && (
+                              <Button
+                                size="sm"
+                                variant={isBanned ? "outline" : "secondary"}
+                                className="h-8 gap-1"
+                                onClick={() => banUser.mutate({ userId: u.user_id, currentStatus: u.approval_status })}
+                                disabled={banUser.isPending}
+                              >
+                                {isBanned ? <ShieldCheck className="h-3.5 w-3.5" /> : <Ban className="h-3.5 w-3.5" />}
+                                {isBanned ? "Unban" : "Ban"}
+                              </Button>
+                            )}
 
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
