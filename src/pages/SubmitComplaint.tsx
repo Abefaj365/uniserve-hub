@@ -47,7 +47,7 @@ export default function SubmitComplaint() {
     setLoading(true);
     const dept = departments?.find(d => d.id === departmentId);
 
-    const { data: complaint, error } = await supabase.from("complaints").insert({
+    const { data: complaint, error } = await supabase.from("complaints").insert([{
       title,
       description,
       category,
@@ -56,6 +56,7 @@ export default function SubmitComplaint() {
       user_id: user.id,
       student_name: profile.full_name || "Unknown",
       student_id_number: profile.student_id,
+    }] as any)
     }).select().single();
 
     if (error) {
