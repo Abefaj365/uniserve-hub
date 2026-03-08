@@ -14,7 +14,6 @@ import { useQuery } from "@tanstack/react-query";
 
 const roles = [
   { value: "student", label: "Student" },
-  { value: "officer", label: "Department Officer" },
   { value: "admin", label: "Administrator" },
 ];
 
