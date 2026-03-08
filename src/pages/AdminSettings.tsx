@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Shield, ShieldOff, Loader2 } from "lucide-react";
 import PasswordInput from "@/components/PasswordInput";
+import MFASetup from "@/components/MFASetup";
 
 export default function AdminSettings() {
   const { user, profile } = useAuth();
