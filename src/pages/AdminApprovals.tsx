@@ -80,10 +80,11 @@ export default function AdminApprovals() {
           <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/50">
+                 <TableRow className="bg-muted/50">
                   <TableHead className="font-semibold">Name</TableHead>
                   <TableHead className="font-semibold">Email</TableHead>
-                  <TableHead className="font-semibold">Student ID</TableHead>
+                  <TableHead className="font-semibold">Role</TableHead>
+                  <TableHead className="font-semibold">ID</TableHead>
                   <TableHead className="font-semibold">Department</TableHead>
                   <TableHead className="font-semibold">Registered</TableHead>
                   <TableHead className="font-semibold">Actions</TableHead>
@@ -94,7 +95,10 @@ export default function AdminApprovals() {
                   <TableRow key={u.id}>
                     <TableCell className="font-medium">{u.full_name}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{u.email}</TableCell>
-                    <TableCell className="font-mono text-xs text-muted-foreground">{u.student_id || "—"}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="capitalize">{u.role}</Badge>
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-muted-foreground">{u.student_id || u.employee_id || "—"}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{u.department || "—"}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {new Date(u.created_at).toLocaleDateString()}
