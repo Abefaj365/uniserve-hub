@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,8 @@ import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Shield, ShieldOff, Loader2 } from "lucide-react";
+import PasswordInput from "@/components/PasswordInput";
 
 export default function AdminSettings() {
   const { user, profile } = useAuth();
@@ -15,18 +17,51 @@ export default function AdminSettings() {
 
   const [fullName, setFullName] = useState(profile?.full_name || "");
   const [newEmail, setNewEmail] = useState(user?.email || "");
-  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
+
+  // 2FA state
+  const [mfaEnabled, setMfaEnabled] = useState(false);
+  const [mfaLoading, setMfaLoading] = useState(true);
+  const [mfaToggling, setMfaToggling] = useState(false);
+
+  useEffect(() => {
+    checkMFAStatus();
+  }, []);
+
+  const checkMFAStatus = async () => {
+    setMfaLoading(true);
+    const { data: factors } = await supabase.auth.mfa.listFactors();
+    const verified = factors?.totp?.filter(f => f.status === "verified") ?? [];
+    setMfaEnabled(verified.length > 0);
+    setMfaLoading(false);
+  };
+
+  const handleToggleMFA = async (enabled: boolean) => {
+    if (enabled) {
+      // Redirect to MFA setup - we'll force re-check by reloading
+      window.location.reload();
+    } else {
+      // Unenroll all TOTP factors
+      setMfaToggling(true);
+      const { data: factors } = await supabase.auth.mfa.listFactors();
+      const totpFactors = factors?.totp ?? [];
+      for (const factor of totpFactors) {
+        await supabase.auth.mfa.unenroll({ factorId: factor.id });
+      }
+      setMfaEnabled(false);
+      setMfaToggling(false);
+      toast({ title: "2FA Disabled", description: "Two-factor authentication has been turned off." });
+    }
+  };
 
   const handleUpdateProfile = async () => {
     setSavingProfile(true);
     const updates: Record<string, any> = {};
     if (newEmail !== user?.email) updates.email = newEmail;
 
-    // Update auth email if changed
     if (Object.keys(updates).length > 0) {
       const { error } = await supabase.auth.updateUser(updates);
       if (error) {
@@ -36,7 +71,6 @@ export default function AdminSettings() {
       }
     }
 
-    // Update profile name
     if (user) {
       await supabase.from("profiles").update({ full_name: fullName } as any).eq("user_id", user.id);
     }
@@ -61,7 +95,6 @@ export default function AdminSettings() {
       toast({ title: "Error", description: error.message, variant: "destructive" });
       return;
     }
-    setCurrentPassword("");
     setNewPassword("");
     setConfirmPassword("");
     toast({ title: "Password Changed", description: "Your password has been updated successfully." });
@@ -97,15 +130,46 @@ export default function AdminSettings() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>New Password</Label>
-              <Input type="password" placeholder="••••••••" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+              <PasswordInput placeholder="••••••••" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Confirm New Password</Label>
-              <Input type="password" placeholder="••••••••" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+              <PasswordInput placeholder="••••••••" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
             </div>
             <Button onClick={handleChangePassword} disabled={savingPassword || !newPassword}>
               {savingPassword ? "Changing..." : "Change Password"}
             </Button>
+          </CardContent>
+        </Card>
+
+        {/* Two-Factor Authentication */}
+        <Card className="border-border/50 shadow-sm">
+          <CardHeader>
+            <CardTitle className="font-display text-base flex items-center gap-2">
+              {mfaEnabled ? <Shield className="h-4 w-4 text-success" /> : <ShieldOff className="h-4 w-4 text-muted-foreground" />}
+              Two-Factor Authentication
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">{mfaEnabled ? "2FA is enabled" : "2FA is disabled"}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {mfaEnabled
+                    ? "Your account is protected with an authenticator app."
+                    : "Enable to require an authenticator code on every login."}
+                </p>
+              </div>
+              {mfaLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              ) : (
+                <Switch
+                  checked={mfaEnabled}
+                  onCheckedChange={handleToggleMFA}
+                  disabled={mfaToggling}
+                />
+              )}
+            </div>
           </CardContent>
         </Card>
 
