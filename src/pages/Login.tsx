@@ -22,6 +22,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [mfaState, setMfaState] = useState<MFAState>("none");
+  const [pendingStatus, setPendingStatus] = useState<{ show: boolean; status: string; name: string }>({ show: false, status: "", name: "" });
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
