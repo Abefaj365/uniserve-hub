@@ -96,6 +96,33 @@ export default function Login() {
   if (mfaState === "verify") {
     return <MFAVerify onVerified={handleMFAVerified} onCancel={handleMFACancel} />;
   }
+  if (pendingStatus.show) {
+    const statusConfig = {
+      pending: { icon: Clock, color: "text-yellow-500", title: "Registration Pending", message: "Your account is awaiting admin approval. You'll be able to log in once an administrator reviews and approves your registration." },
+      rejected: { icon: XCircle, color: "text-destructive", title: "Registration Rejected", message: "Your registration has been rejected by the administrator. Please contact the admin for more information." },
+      banned: { icon: Ban, color: "text-destructive", title: "Account Banned", message: "Your account has been banned. Please contact the administrator." },
+    }[pendingStatus.status] || { icon: Clock, color: "text-yellow-500", title: "Access Denied", message: "You cannot access the system at this time." };
+    const StatusIcon = statusConfig.icon;
+    return (
+      <div className="flex min-h-[calc(100vh-64px)] items-center justify-center py-12 px-4">
+        <Card className="w-full max-w-md border-border/50 shadow-lg">
+          <CardHeader className="text-center pb-2">
+            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+              <StatusIcon className={`h-7 w-7 ${statusConfig.color}`} />
+            </div>
+            <CardTitle className="font-display text-2xl">{statusConfig.title}</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <p className="text-sm text-muted-foreground">{statusConfig.message}</p>
+            {pendingStatus.name && <p className="text-xs text-muted-foreground">Registered as: <span className="font-medium text-foreground">{pendingStatus.name}</span></p>}
+            <Button variant="outline" className="w-full" onClick={() => setPendingStatus({ show: false, status: "", name: "" })}>
+              Back to Login
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-[calc(100vh-64px)] items-center justify-center py-12 px-4">
