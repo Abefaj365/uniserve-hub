@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Shield, ShieldOff, Loader2 } from "lucide-react";
 import PasswordInput from "@/components/PasswordInput";
+import MFASetup from "@/components/MFASetup";
 
 export default function AdminSettings() {
   const { user, profile } = useAuth();
@@ -39,10 +40,11 @@ export default function AdminSettings() {
     setMfaLoading(false);
   };
 
+  const [showMFASetup, setShowMFASetup] = useState(false);
+
   const handleToggleMFA = async (enabled: boolean) => {
     if (enabled) {
-      // Redirect to MFA setup - we'll force re-check by reloading
-      window.location.reload();
+      setShowMFASetup(true);
     } else {
       // Unenroll all TOTP factors
       setMfaToggling(true);
@@ -55,6 +57,12 @@ export default function AdminSettings() {
       setMfaToggling(false);
       toast({ title: "2FA Disabled", description: "Two-factor authentication has been turned off." });
     }
+  };
+
+  const handleMFASetupComplete = () => {
+    setShowMFASetup(false);
+    setMfaEnabled(true);
+    toast({ title: "2FA Enabled!", description: "Two-factor authentication is now active." });
   };
 
   const handleUpdateProfile = async () => {
@@ -99,6 +107,10 @@ export default function AdminSettings() {
     setConfirmPassword("");
     toast({ title: "Password Changed", description: "Your password has been updated successfully." });
   };
+
+  if (showMFASetup) {
+    return <MFASetup onComplete={handleMFASetupComplete} />;
+  }
 
   return (
     <DashboardLayout role="admin" title="Settings">

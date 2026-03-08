@@ -176,7 +176,7 @@ export default function AdminUsers() {
                                 Reject
                               </Button>
                             )}
-                            {u.approval_status === "approved" && (
+                            {(u.approval_status === "approved" || u.approval_status === "banned") && (
                               <Button
                                 size="sm"
                                 variant={isBanned ? "outline" : "secondary"}

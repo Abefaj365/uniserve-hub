@@ -22,6 +22,16 @@ export default function AdminDashboard() {
     enabled: !!user,
   });
 
+  const { data: userCount } = useQuery({
+    queryKey: ["admin-user-count"],
+    queryFn: async () => {
+      const { count, error } = await supabase.from("profiles").select("id", { count: "exact", head: true });
+      if (error) throw error;
+      return count ?? 0;
+    },
+    enabled: !!user,
+  });
+
   const { data: departments } = useQuery({
     queryKey: ["departments"],
     queryFn: async () => {
@@ -58,7 +68,7 @@ export default function AdminDashboard() {
           <StatsCard title="In Progress" value={inProgress} icon={AlertTriangle} colorClass="bg-info/10 text-info" />
           <StatsCard title="Resolved" value={resolved} icon={CheckCircle} colorClass="bg-success/10 text-success" />
           <StatsCard title="Departments" value={departments?.length ?? 0} icon={Building2} colorClass="bg-accent/10 text-accent" />
-          <StatsCard title="Students" value={total} icon={Users} colorClass="bg-primary/10 text-primary" />
+          <StatsCard title="Total Users" value={userCount ?? 0} icon={Users} colorClass="bg-primary/10 text-primary" />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
