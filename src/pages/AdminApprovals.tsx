@@ -1,9 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
@@ -22,12 +24,23 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function AdminApprovals() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { markAllRead } = useNotifications("admin");
+
+  const [rejectDialog, setRejectDialog] = useState<{ open: boolean; userId: string; name: string }>({ open: false, userId: "", name: "" });
+  const [rejectionReason, setRejectionReason] = useState("");
 
   useEffect(() => {
     markAllRead();
@@ -67,10 +80,10 @@ export default function AdminApprovals() {
   });
 
   const updateStatus = useMutation({
-    mutationFn: async ({ userId, status }: { userId: string; status: string }) => {
+    mutationFn: async ({ userId, status, reason }: { userId: string; status: string; reason?: string }) => {
       if (status === "rejected") {
         const { data, error } = await supabase.functions.invoke("delete-rejected-user", {
-          body: { userId },
+          body: { userId, reason },
         });
         if (error) throw error;
         if (data?.error) throw new Error(data.error);
@@ -108,6 +121,12 @@ export default function AdminApprovals() {
     },
   });
 
+  const handleRejectConfirm = () => {
+    updateStatus.mutate({ userId: rejectDialog.userId, status: "rejected", reason: rejectionReason.trim() || undefined });
+    setRejectDialog({ open: false, userId: "", name: "" });
+    setRejectionReason("");
+  };
+
   const renderTable = (data: any[] | undefined, isLoading: boolean, type: "pending" | "rejected") => {
     if (isLoading) {
       return <div className="space-y-3">{[1, 2, 3].map(i => <Skeleton key={i} className="h-12 w-full" />)}</div>;
@@ -136,6 +155,7 @@ export default function AdminApprovals() {
               {type === "pending" && <TableHead className="font-semibold">Role</TableHead>}
               <TableHead className="font-semibold">ID</TableHead>
               <TableHead className="font-semibold">Department</TableHead>
+              {type === "rejected" && <TableHead className="font-semibold">Reason</TableHead>}
               <TableHead className="font-semibold">{type === "pending" ? "Registered" : "Rejected"}</TableHead>
               <TableHead className="font-semibold">Actions</TableHead>
             </TableRow>
@@ -152,6 +172,11 @@ export default function AdminApprovals() {
                 )}
                 <TableCell className="font-mono text-xs text-muted-foreground">{u.student_id || u.employee_id || "—"}</TableCell>
                 <TableCell className="text-sm text-muted-foreground">{u.department || "—"}</TableCell>
+                {type === "rejected" && (
+                  <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate" title={u.rejection_reason || ""}>
+                    {u.rejection_reason || "—"}
+                  </TableCell>
+                )}
                 <TableCell className="text-sm text-muted-foreground">
                   {new Date(u.updated_at || u.created_at).toLocaleDateString()}
                 </TableCell>
@@ -171,7 +196,7 @@ export default function AdminApprovals() {
                         size="sm"
                         variant="destructive"
                         className="h-8 gap-1"
-                        onClick={() => updateStatus.mutate({ userId: u.user_id, status: "rejected" })}
+                        onClick={() => setRejectDialog({ open: true, userId: u.user_id, name: u.full_name })}
                         disabled={updateStatus.isPending}
                       >
                         <XCircle className="h-3.5 w-3.5" />
@@ -250,6 +275,36 @@ export default function AdminApprovals() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Rejection Reason Dialog */}
+      <Dialog open={rejectDialog.open} onOpenChange={(open) => { if (!open) { setRejectDialog({ open: false, userId: "", name: "" }); setRejectionReason(""); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject Registration</DialogTitle>
+            <DialogDescription>
+              You are about to reject <strong>{rejectDialog.name}</strong>'s registration. Optionally provide a reason.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="rejection-reason">Reason (optional)</Label>
+            <Textarea
+              id="rejection-reason"
+              placeholder="e.g., Invalid student ID, duplicate account..."
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              rows={3}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setRejectDialog({ open: false, userId: "", name: "" }); setRejectionReason(""); }}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleRejectConfirm} disabled={updateStatus.isPending}>
+              {updateStatus.isPending ? "Rejecting..." : "Reject User"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }

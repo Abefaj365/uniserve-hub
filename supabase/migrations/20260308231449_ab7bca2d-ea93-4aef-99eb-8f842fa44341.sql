@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN rejection_reason text DEFAULT NULL;

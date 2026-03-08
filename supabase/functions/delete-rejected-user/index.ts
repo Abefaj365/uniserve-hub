@@ -16,7 +16,6 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Verify the caller is an admin
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
     const { data: { user: caller } } = await supabaseAdmin.auth.getUser(token);
@@ -41,7 +40,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { userId } = await req.json();
+    const { userId, reason } = await req.json();
     if (!userId) {
       return new Response(JSON.stringify({ error: "userId required" }), {
         status: 400,
@@ -49,10 +48,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Update profile status to rejected (keep profile data for rejected panel)
+    // Update profile status to rejected and store reason
     await supabaseAdmin
       .from("profiles")
-      .update({ approval_status: "rejected" })
+      .update({ approval_status: "rejected", rejection_reason: reason || null })
       .eq("user_id", userId);
 
     // Delete user_roles and auth user so they can re-register
