@@ -10,6 +10,7 @@ const menuItems: Record<UserRole, { label: string; icon: React.ElementType; path
     { label: "Dashboard", icon: LayoutDashboard, path: "/student" },
     { label: "Submit Complaint", icon: PlusCircle, path: "/student/submit" },
     { label: "My Complaints", icon: FileText, path: "/student/complaints" },
+    { label: "All Complaints", icon: Globe, path: "/student/all-complaints" },
   ],
   officer: [
     { label: "Dashboard", icon: LayoutDashboard, path: "/officer" },
