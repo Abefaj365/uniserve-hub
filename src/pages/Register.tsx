@@ -99,7 +99,7 @@ export default function Register() {
             <GraduationCap className="h-6 w-6 text-primary-foreground" />
           </div>
           <CardTitle className="font-display text-2xl">Create Account</CardTitle>
-          <p className="text-sm text-muted-foreground mt-1">Register as a Student, Officer, or Administrator</p>
+          <p className="text-sm text-muted-foreground mt-1">Register as a Student or Administrator</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleRegister} className="space-y-4">
