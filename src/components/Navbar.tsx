@@ -26,7 +26,6 @@ export default function Navbar() {
 
         <div className="hidden items-center gap-6 md:flex">
           <Link to="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Home</Link>
-          <Link to="/documentation" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Documentation</Link>
           {user ? (
             <>
               <Link to={dashboardPath} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Dashboard</Link>
@@ -49,7 +48,6 @@ export default function Navbar() {
         <div className="border-t border-border bg-card p-4 md:hidden">
           <div className="flex flex-col gap-3">
             <Link to="/" className="text-sm font-medium" onClick={() => setOpen(false)}>Home</Link>
-            <Link to="/documentation" className="text-sm font-medium" onClick={() => setOpen(false)}>Documentation</Link>
             {user ? (
               <>
                 <Link to={dashboardPath} className="text-sm font-medium" onClick={() => setOpen(false)}>Dashboard</Link>
