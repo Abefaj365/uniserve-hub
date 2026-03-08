@@ -145,7 +145,7 @@ export default function Register() {
 
             <div className="space-y-2">
               <Label>Password</Label>
-              <Input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
+              <PasswordInput placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
             </div>
 
             <Button type="submit" className="w-full" disabled={loading}>
