@@ -47,7 +47,7 @@ export default function AdminUsers() {
                   <TableRow key={u.id}>
                     <TableCell className="font-medium">{u.full_name}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{u.email}</TableCell>
-                    <TableCell className="font-mono text-xs text-muted-foreground">{u.student_id || "—"}</TableCell>
+                    <TableCell className="font-mono text-xs text-muted-foreground">{u.student_id || u.employee_id || "—"}</TableCell>
                     <TableCell>
                       <Badge variant={u.role === "admin" ? "default" : "secondary"}>{u.role}</Badge>
                     </TableCell>
