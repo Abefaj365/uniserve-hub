@@ -34,6 +34,9 @@ interface Props {
 }
 
 export default function ComplaintDetailDialog({ complaint, open, onOpenChange }: Props) {
+  const { user, role } = useAuth();
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+
   const { data: history, isLoading: historyLoading } = useQuery({
     queryKey: ["complaint-history", complaint?.id],
     queryFn: async () => {
