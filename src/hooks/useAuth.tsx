@@ -8,7 +8,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   role: AppRole | null;
-  profile: { full_name: string; student_id: string | null; department: string | null; email: string | null } | null;
+  profile: { full_name: string; student_id: string | null; department: string | null; email: string | null; approval_status: string } | null;
   isLoading: boolean;
   signUp: (email: string, password: string, metadata?: Record<string, string>) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
