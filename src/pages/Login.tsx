@@ -46,25 +46,20 @@ export default function Login() {
         return;
       }
 
-      // Check if user is admin - enforce 2FA
+      // Check if user is admin with 2FA enabled - require verification
       const { data: roleData } = await supabase.from("user_roles").select("role").eq("user_id", loggedInUser.id).single();
       
       if (roleData?.role === "admin") {
-        // Check MFA factors
         const { data: factors } = await supabase.auth.mfa.listFactors();
         const verifiedFactors = factors?.totp?.filter(f => f.status === "verified") ?? [];
         
-        if (verifiedFactors.length === 0) {
-          // Admin needs to set up 2FA
-          setLoading(false);
-          setMfaState("setup");
-          return;
-        } else {
-          // Admin has 2FA, needs to verify
+        if (verifiedFactors.length > 0) {
+          // Admin has 2FA set up, needs to verify this session
           setLoading(false);
           setMfaState("verify");
           return;
         }
+        // Admin without 2FA - let them in, they can set it up from Settings
       }
     }
 

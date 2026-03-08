@@ -27,8 +27,8 @@ export default function AdminMFAGate({ children }: { children: ReactNode }) {
     const verifiedFactors = factors?.totp?.filter(f => f.status === "verified") ?? [];
 
     if (verifiedFactors.length === 0) {
-      // No 2FA set up yet - needs setup
-      setStatus("needs_setup");
+      // No 2FA set up yet - let them through, they can enable from Settings
+      setStatus("verified");
     } else {
       // Has 2FA but hasn't verified this session
       setStatus("needs_verify");
