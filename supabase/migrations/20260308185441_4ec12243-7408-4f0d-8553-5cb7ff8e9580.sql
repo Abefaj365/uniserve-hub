@@ -1,0 +1,2 @@
+CREATE UNIQUE INDEX unique_employee_id ON public.profiles (employee_id) WHERE employee_id IS NOT NULL AND employee_id != '';
+CREATE UNIQUE INDEX unique_student_id ON public.profiles (student_id) WHERE student_id IS NOT NULL AND student_id != '';
