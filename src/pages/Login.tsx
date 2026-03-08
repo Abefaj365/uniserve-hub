@@ -27,13 +27,12 @@ export default function Login() {
       return;
     }
 
-    // Check approval status for students
+    // Check approval status for ALL roles
     const { data: { user: loggedInUser } } = await supabase.auth.getUser();
     if (loggedInUser) {
       const { data: profile } = await supabase.from("profiles").select("approval_status").eq("user_id", loggedInUser.id).single();
-      const { data: roleData } = await supabase.from("user_roles").select("role").eq("user_id", loggedInUser.id).single();
       
-      if (roleData?.role === "student" && profile?.approval_status !== "approved") {
+      if (profile?.approval_status !== "approved") {
         await supabase.auth.signOut();
         setLoading(false);
         const statusMsg = profile?.approval_status === "rejected"
