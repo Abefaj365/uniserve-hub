@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -7,12 +8,19 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { useNotifications } from "@/hooks/useNotifications";
 import { CheckCircle, XCircle, Clock } from "lucide-react";
 
 export default function AdminApprovals() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { markAllRead } = useNotifications("admin");
+
+  // Mark notifications as read when visiting this page
+  useEffect(() => {
+    markAllRead();
+  }, []);
 
   const { data: pendingUsers, isLoading } = useQuery({
     queryKey: ["pending-approvals"],

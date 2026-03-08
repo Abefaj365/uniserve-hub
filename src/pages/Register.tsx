@@ -63,6 +63,12 @@ export default function Register() {
       toast({ title: "Registration Failed", description: error.message, variant: "destructive" });
       return;
     }
+
+    // Trigger email notification to admin (fire and forget)
+    supabase.functions.invoke("notify-admin-email", {
+      body: { full_name: `${firstName} ${lastName}`, role, email },
+    }).catch(() => {});
+
     const desc = "Your registration is pending admin approval. You will be able to log in once an administrator approves your account.";
     toast({ title: "Registration Submitted!", description: desc });
     navigate("/login");
