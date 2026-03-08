@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { GraduationCap } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Login() {
   const navigate = useNavigate();
