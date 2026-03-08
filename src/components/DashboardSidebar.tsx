@@ -16,7 +16,7 @@ const menuItems: Record<UserRole, { label: string; icon: React.ElementType; path
   ],
   admin: [
     { label: "Dashboard", icon: LayoutDashboard, path: "/admin" },
-    { label: "Student Approvals", icon: ShieldCheck, path: "/admin/approvals" },
+    { label: "Approvals", icon: ShieldCheck, path: "/admin/approvals" },
     { label: "All Complaints", icon: FileText, path: "/admin/complaints" },
     { label: "Departments", icon: Building2, path: "/admin/departments" },
     { label: "Users", icon: Users, path: "/admin/users" },

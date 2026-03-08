@@ -47,11 +47,11 @@ export default function AdminApprovals() {
   });
 
   return (
-    <DashboardLayout role="admin" title="Student Approvals">
+    <DashboardLayout role="admin" title="User Approvals">
       <div className="space-y-6 animate-fade-in">
         <div className="flex items-center gap-2 text-muted-foreground text-sm">
           <Clock className="h-4 w-4" />
-          <span>Students below are waiting for your approval to access the system.</span>
+          <span>Users below are waiting for your approval to access the system.</span>
         </div>
 
         {isLoading ? (
@@ -60,7 +60,7 @@ export default function AdminApprovals() {
           <div className="rounded-xl border border-border bg-card p-12 text-center text-muted-foreground">
             <CheckCircle className="h-10 w-10 mx-auto mb-3 text-green-500" />
             <p className="font-medium">No pending approvals</p>
-            <p className="text-sm mt-1">All student registrations have been reviewed.</p>
+            <p className="text-sm mt-1">All registrations have been reviewed.</p>
           </div>
         ) : (
           <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
