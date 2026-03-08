@@ -21,12 +21,30 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     const { error } = await signIn(email, password);
-    setLoading(false);
     if (error) {
+      setLoading(false);
       toast({ title: "Login Failed", description: error.message, variant: "destructive" });
       return;
     }
-    // Role-based redirect will be handled by the auth state change
+
+    // Check approval status for students
+    const { data: { user: loggedInUser } } = await supabase.auth.getUser();
+    if (loggedInUser) {
+      const { data: profile } = await supabase.from("profiles").select("approval_status").eq("user_id", loggedInUser.id).single();
+      const { data: roleData } = await supabase.from("user_roles").select("role").eq("user_id", loggedInUser.id).single();
+      
+      if (roleData?.role === "student" && profile?.approval_status !== "approved") {
+        await supabase.auth.signOut();
+        setLoading(false);
+        const statusMsg = profile?.approval_status === "rejected"
+          ? "Your registration has been rejected by the administrator."
+          : "Your registration is pending admin approval. Please wait for approval before logging in.";
+        toast({ title: "Access Denied", description: statusMsg, variant: "destructive" });
+        return;
+      }
+    }
+
+    setLoading(false);
     toast({ title: "Login Successful", description: "Redirecting to your dashboard..." });
   };
 
