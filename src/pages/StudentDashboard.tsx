@@ -6,9 +6,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { FileText, Clock, CheckCircle, AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useRealtimeComplaintUpdates } from "@/hooks/useRealtimeComplaintUpdates";
 
 export default function StudentDashboard() {
   const { user, profile } = useAuth();
+  useRealtimeComplaintUpdates();
 
   const { data: complaints, isLoading } = useQuery({
     queryKey: ["my-complaints", user?.id],

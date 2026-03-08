@@ -1,12 +1,15 @@
+import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import ComplaintsTable from "@/components/ComplaintsTable";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useRealtimeComplaintUpdates } from "@/hooks/useRealtimeComplaintUpdates";
 
 export default function StudentComplaints() {
   const { user } = useAuth();
+  useRealtimeComplaintUpdates();
 
   const { data: complaints, isLoading } = useQuery({
     queryKey: ["my-complaints", user?.id],
