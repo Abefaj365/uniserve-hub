@@ -25,11 +25,18 @@ export interface Department {
 }
 
 export const departments: Department[] = [
-  { id: "d1", name: "Hostel Management", officerName: "Mr. Rahman", complaintCount: 12 },
-  { id: "d2", name: "Laboratory", officerName: "Dr. Karim", complaintCount: 8 },
-  { id: "d3", name: "Examination Cell", officerName: "Ms. Sultana", complaintCount: 15 },
-  { id: "d4", name: "Transport", officerName: "Mr. Hossain", complaintCount: 6 },
-  { id: "d5", name: "Campus Facilities", officerName: "Mr. Ahmed", complaintCount: 10 },
+  { id: "d1", name: "Computer Science & Engineering (CSE)", officerName: "—", complaintCount: 0 },
+  { id: "d2", name: "Electrical & Electronic Engineering (EEE)", officerName: "—", complaintCount: 0 },
+  { id: "d3", name: "Business Administration (BBA)", officerName: "—", complaintCount: 0 },
+  { id: "d4", name: "Law (LLB)", officerName: "—", complaintCount: 0 },
+  { id: "d5", name: "English", officerName: "—", complaintCount: 0 },
+  { id: "d6", name: "Pharmacy", officerName: "—", complaintCount: 0 },
+  { id: "d7", name: "Economics", officerName: "—", complaintCount: 0 },
+  { id: "d8", name: "Hostel Management", officerName: "—", complaintCount: 0 },
+  { id: "d9", name: "Examination Cell", officerName: "—", complaintCount: 0 },
+  { id: "d10", name: "Transport", officerName: "—", complaintCount: 0 },
+  { id: "d11", name: "Campus Facilities", officerName: "—", complaintCount: 0 },
+  { id: "d12", name: "Library", officerName: "—", complaintCount: 0 },
 ];
 
 export const categories = [

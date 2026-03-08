@@ -8,34 +8,61 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { GraduationCap } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+
+const roles = [
+  { value: "student", label: "Student" },
+  { value: "officer", label: "Department Officer" },
+  { value: "admin", label: "Administrator" },
+];
 
 export default function Register() {
   const navigate = useNavigate();
   const { signUp } = useAuth();
   const { toast } = useToast();
+  const [role, setRole] = useState("student");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [studentId, setStudentId] = useState("");
+  const [employeeId, setEmployeeId] = useState("");
   const [email, setEmail] = useState("");
   const [department, setDepartment] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const { data: departments } = useQuery({
+    queryKey: ["departments"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("departments").select("*");
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await signUp(email, password, {
+
+    const metadata: Record<string, string> = {
       full_name: `${firstName} ${lastName}`,
-      student_id: studentId,
       department,
-      role: "student",
-    });
+      role,
+    };
+
+    if (role === "student") {
+      metadata.student_id = studentId;
+    } else {
+      metadata.employee_id = employeeId;
+    }
+
+    const { error } = await signUp(email, password, metadata);
     setLoading(false);
     if (error) {
       toast({ title: "Registration Failed", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Registration Successful!", description: "You can now log in with your credentials." });
+    toast({ title: "Registration Successful!", description: "Please check your email to verify your account, then log in." });
     navigate("/login");
   };
 
@@ -46,11 +73,24 @@ export default function Register() {
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl gradient-primary">
             <GraduationCap className="h-6 w-6 text-primary-foreground" />
           </div>
-          <CardTitle className="font-display text-2xl">Student Registration</CardTitle>
-          <p className="text-sm text-muted-foreground mt-1">Create your account to submit complaints</p>
+          <CardTitle className="font-display text-2xl">Create Account</CardTitle>
+          <p className="text-sm text-muted-foreground mt-1">Register as a Student, Officer, or Administrator</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleRegister} className="space-y-4">
+            {/* Role Selection */}
+            <div className="space-y-2">
+              <Label>Register As</Label>
+              <Select value={role} onValueChange={setRole}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {roles.map((r) => (
+                    <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label>First Name</Label>
@@ -61,31 +101,42 @@ export default function Register() {
                 <Input placeholder="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>Student ID</Label>
-              <Input placeholder="e.g., STU-2023-001" value={studentId} onChange={(e) => setStudentId(e.target.value)} required />
-            </div>
+
+            {/* Conditional ID field */}
+            {role === "student" ? (
+              <div className="space-y-2">
+                <Label>Student ID</Label>
+                <Input placeholder="e.g., STU-2023-001" value={studentId} onChange={(e) => setStudentId(e.target.value)} required />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label>Employee ID</Label>
+                <Input placeholder="e.g., EMP-001" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} required />
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label>Email</Label>
               <Input type="email" placeholder="your@bgctub.ac.bd" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
+
             <div className="space-y-2">
-              <Label>Department</Label>
+              <Label>Department / Faculty</Label>
               <Select value={department} onValueChange={setDepartment}>
                 <SelectTrigger><SelectValue placeholder="Select department" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="CSE">Computer Science & Engineering</SelectItem>
-                  <SelectItem value="EEE">Electrical & Electronic Engineering</SelectItem>
-                  <SelectItem value="BBA">Business Administration</SelectItem>
-                  <SelectItem value="English">English</SelectItem>
-                  <SelectItem value="Pharmacy">Pharmacy</SelectItem>
+                  {departments?.map((d) => (
+                    <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
+
             <div className="space-y-2">
               <Label>Password</Label>
               <Input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
             </div>
+
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Registering..." : "Register"}
             </Button>
