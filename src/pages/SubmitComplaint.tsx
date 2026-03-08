@@ -56,8 +56,7 @@ export default function SubmitComplaint() {
       user_id: user.id,
       student_name: profile.full_name || "Unknown",
       student_id_number: profile.student_id,
-    }] as any)
-    }).select().single();
+    }] as any).select().single();
 
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
