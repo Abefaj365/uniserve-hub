@@ -108,6 +108,10 @@ export default function AdminSettings() {
     toast({ title: "Password Changed", description: "Your password has been updated successfully." });
   };
 
+  if (showMFASetup) {
+    return <MFASetup onComplete={handleMFASetupComplete} />;
+  }
+
   return (
     <DashboardLayout role="admin" title="Settings">
       <div className="max-w-2xl space-y-6 animate-fade-in">
