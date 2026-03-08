@@ -62,11 +62,15 @@ export default function Register() {
     }
 
     const { error } = await signUp(email, password, metadata);
-    setLoading(false);
     if (error) {
+      setLoading(false);
       toast({ title: "Registration Failed", description: error.message, variant: "destructive" });
       return;
     }
+
+    // Sign out immediately to prevent auto-login redirect loop
+    await supabase.auth.signOut();
+    setLoading(false);
 
     // Trigger email notification to admin (fire and forget)
     supabase.functions.invoke("notify-admin-email", {
