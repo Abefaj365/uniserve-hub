@@ -28,7 +28,8 @@ export default function AdminApprovals() {
       const { data: profiles, error } = await supabase
         .from("profiles")
         .select("*")
-        .eq("approval_status", "pending");
+        .eq("approval_status", "pending")
+        .neq("user_id", user!.id);
       if (error) throw error;
       // Fetch roles
       const userIds = profiles.map(p => p.user_id);
