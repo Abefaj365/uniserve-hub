@@ -1,6 +1,7 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { GraduationCap, LayoutDashboard, FileText, PlusCircle, BarChart3, Users, Building2, Settings, LogOut, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 import type { UserRole } from "@/lib/mockData";
 
 const menuItems: Record<UserRole, { label: string; icon: React.ElementType; path: string }[]> = {
@@ -25,7 +26,7 @@ const menuItems: Record<UserRole, { label: string; icon: React.ElementType; path
 
 export default function DashboardSidebar({ role }: { role: UserRole }) {
   const location = useLocation();
-  const navigate = useNavigate();
+  const { signOut } = useAuth();
   const items = menuItems[role];
   const roleLabel = role === "student" ? "Student" : role === "officer" ? "Department Officer" : "Administrator";
 
@@ -66,7 +67,7 @@ export default function DashboardSidebar({ role }: { role: UserRole }) {
         <Button
           variant="ghost"
           className="w-full justify-start gap-3 text-primary-foreground/70 hover:bg-white/10 hover:text-primary-foreground"
-          onClick={() => navigate("/")}
+          onClick={signOut}
         >
           <LogOut className="h-4 w-4" />
           Logout

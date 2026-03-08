@@ -4,18 +4,29 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { GraduationCap } from "lucide-react";
-import type { UserRole } from "@/lib/mockData";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Login() {
   const navigate = useNavigate();
-  const [role, setRole] = useState<UserRole>("student");
+  const { signIn } = useAuth();
+  const { toast } = useToast();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const routes: Record<UserRole, string> = { student: "/student", officer: "/officer", admin: "/admin" };
-    navigate(routes[role]);
+    setLoading(true);
+    const { error } = await signIn(email, password);
+    setLoading(false);
+    if (error) {
+      toast({ title: "Login Failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    // Role-based redirect will be handled by the auth state change
+    toast({ title: "Login Successful", description: "Redirecting to your dashboard..." });
   };
 
   return (
@@ -31,25 +42,16 @@ export default function Login() {
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label>Login As</Label>
-              <Select value={role} onValueChange={(v) => setRole(v as UserRole)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="student">Student</SelectItem>
-                  <SelectItem value="officer">Department Officer</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Email / Student ID</Label>
-              <Input placeholder="Enter your email or ID" defaultValue="demo@bgctub.ac.bd" />
+              <Label>Email</Label>
+              <Input type="email" placeholder="Enter your email" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
             <div className="space-y-2">
               <Label>Password</Label>
-              <Input type="password" placeholder="••••••••" defaultValue="password" />
+              <Input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
-            <Button type="submit" className="w-full">Login</Button>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Logging in..." : "Login"}
+            </Button>
             <p className="text-center text-sm text-muted-foreground">
               Don't have an account? <Link to="/register" className="font-medium text-primary hover:underline">Register</Link>
             </p>
