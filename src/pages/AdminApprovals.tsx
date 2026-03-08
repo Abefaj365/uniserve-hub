@@ -25,12 +25,18 @@ export default function AdminApprovals() {
   const { data: pendingUsers, isLoading } = useQuery({
     queryKey: ["pending-approvals"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: profiles, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("approval_status", "pending");
       if (error) throw error;
-      return data;
+      // Fetch roles
+      const userIds = profiles.map(p => p.user_id);
+      const { data: roles } = await supabase.from("user_roles").select("*").in("user_id", userIds);
+      return profiles.map(p => ({
+        ...p,
+        role: roles?.find(r => r.user_id === p.user_id)?.role ?? "student",
+      }));
     },
     enabled: !!user,
   });
@@ -74,10 +80,11 @@ export default function AdminApprovals() {
           <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/50">
+                 <TableRow className="bg-muted/50">
                   <TableHead className="font-semibold">Name</TableHead>
                   <TableHead className="font-semibold">Email</TableHead>
-                  <TableHead className="font-semibold">Student ID</TableHead>
+                  <TableHead className="font-semibold">Role</TableHead>
+                  <TableHead className="font-semibold">ID</TableHead>
                   <TableHead className="font-semibold">Department</TableHead>
                   <TableHead className="font-semibold">Registered</TableHead>
                   <TableHead className="font-semibold">Actions</TableHead>
@@ -88,7 +95,10 @@ export default function AdminApprovals() {
                   <TableRow key={u.id}>
                     <TableCell className="font-medium">{u.full_name}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{u.email}</TableCell>
-                    <TableCell className="font-mono text-xs text-muted-foreground">{u.student_id || "—"}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="capitalize">{u.role}</Badge>
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-muted-foreground">{u.student_id || u.employee_id || "—"}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{u.department || "—"}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {new Date(u.created_at).toLocaleDateString()}
