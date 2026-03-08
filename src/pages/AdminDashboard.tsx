@@ -22,6 +22,16 @@ export default function AdminDashboard() {
     enabled: !!user,
   });
 
+  const { data: userCount } = useQuery({
+    queryKey: ["admin-user-count"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("profiles").select("id", { count: "exact", head: true });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
   const { data: departments } = useQuery({
     queryKey: ["departments"],
     queryFn: async () => {
