@@ -36,7 +36,9 @@ export default function Register() {
     queryFn: async () => {
       const { data, error } = await supabase.from("departments").select("*");
       if (error) throw error;
-      return data;
+      // Filter out service/complaint departments - only show academic faculties
+      const academicDepts = ["Computer Science & Engineering (CSE)", "Electrical & Electronic Engineering (EEE)", "Business Administration (BBA)", "Law (LLB)", "English", "Pharmacy", "Economics"];
+      return data.filter(d => academicDepts.includes(d.name));
     },
   });
 
