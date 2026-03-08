@@ -29,7 +29,7 @@ export default function MFASetup({ onComplete, onSkip }: Props) {
   const enrollMFA = async () => {
     // First check if there's an existing unverified factor and unenroll it
     const { data: existingFactors } = await supabase.auth.mfa.listFactors();
-    const unverifiedFactors = existingFactors?.totp?.filter(f => f.status === "unverified") ?? [];
+    const unverifiedFactors = existingFactors?.totp?.filter(f => (f.status as string) !== "verified") ?? [];
     for (const factor of unverifiedFactors) {
       await supabase.auth.mfa.unenroll({ factorId: factor.id });
     }
