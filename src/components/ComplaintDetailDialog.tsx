@@ -191,15 +191,22 @@ export default function ComplaintDetailDialog({ complaint, open, onOpenChange }:
             ) : history && history.length > 0 ? (
               <div className="space-y-2">
                 {history.map((h) => (
-                  <div key={h.id} className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 p-3 text-sm">
-                    <div className="flex-1">
-                      <span className="text-muted-foreground">{h.old_status ?? "New"}</span>
-                      <span className="mx-2">→</span>
-                      <span className="font-medium">{h.new_status}</span>
+                  <div key={h.id} className="rounded-lg border border-border bg-muted/30 p-3 text-sm space-y-1">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1">
+                        <span className="text-muted-foreground">{h.old_status ?? "New"}</span>
+                        <span className="mx-2">→</span>
+                        <span className="font-medium">{h.new_status}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(h.created_at).toLocaleDateString()}
+                      </span>
                     </div>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(h.created_at).toLocaleDateString()}
-                    </span>
+                    {h.note && (
+                      <p className="text-xs text-muted-foreground bg-background rounded p-2 border border-border">
+                        💬 {h.note}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>
