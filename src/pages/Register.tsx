@@ -71,7 +71,6 @@ export default function Register() {
     // Sign out immediately to prevent auto-login redirect loop
     await supabase.auth.signOut();
     setLoading(false);
-    }
 
     // Trigger email notification to admin (fire and forget)
     supabase.functions.invoke("notify-admin-email", {
