@@ -8,7 +8,19 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Ban, Trash2, ShieldCheck } from "lucide-react";
+import { Ban, Trash2, ShieldCheck, Eye } from "lucide-react";
+import UserDetailDialog from "@/components/UserDetailDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import {
   AlertDialog,
   AlertDialogAction,
