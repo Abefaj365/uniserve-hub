@@ -42,12 +42,7 @@ export default function Login() {
       if (profile?.approval_status !== "approved") {
         await supabase.auth.signOut();
         setLoading(false);
-        const statusMsg = profile?.approval_status === "rejected"
-          ? "Your registration has been rejected by the administrator."
-          : profile?.approval_status === "banned"
-          ? "Your account has been banned. Please contact the administrator."
-          : "Your registration is pending admin approval. Please wait for approval before logging in.";
-        toast({ title: "Access Denied", description: statusMsg, variant: "destructive" });
+        setPendingStatus({ show: true, status: profile?.approval_status || "pending", name: profile?.full_name || "" });
         return;
       }
 
