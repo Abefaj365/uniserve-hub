@@ -24,6 +24,7 @@ import AdminSettings from "./pages/AdminSettings";
 import AdminApprovals from "./pages/AdminApprovals";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import AdminMFAGate from "./pages/AdminMFAGate";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,15 @@ function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode;
   if (!user) return <Navigate to="/login" replace />;
   if (role && !allowedRoles.includes(role)) return <Navigate to="/" replace />;
   return <>{children}</>;
+}
+
+function AdminProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, role, isLoading } = useAuth();
+  if (isLoading) return <div className="flex items-center justify-center min-h-screen text-muted-foreground">Loading...</div>;
+  if (!user) return <Navigate to="/login" replace />;
+  if (role !== "admin") return <Navigate to="/" replace />;
+  // MFA gate is handled inside AdminMFAGate wrapper
+  return <AdminMFAGate>{children}</AdminMFAGate>;
 }
 
 function AuthRedirect({ children }: { children: React.ReactNode }) {
@@ -62,13 +72,13 @@ const AppRoutes = () => (
       <Route path="/student/all-complaints" element={<ProtectedRoute allowedRoles={["student"]}><AllComplaints /></ProtectedRoute>} />
       <Route path="/officer" element={<ProtectedRoute allowedRoles={["officer"]}><OfficerDashboard /></ProtectedRoute>} />
       <Route path="/officer/complaints" element={<ProtectedRoute allowedRoles={["officer"]}><OfficerComplaints /></ProtectedRoute>} />
-      <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
-      <Route path="/admin/approvals" element={<ProtectedRoute allowedRoles={["admin"]}><AdminApprovals /></ProtectedRoute>} />
-      <Route path="/admin/complaints" element={<ProtectedRoute allowedRoles={["admin"]}><AdminComplaints /></ProtectedRoute>} />
-      <Route path="/admin/departments" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDepartments /></ProtectedRoute>} />
-      <Route path="/admin/users" element={<ProtectedRoute allowedRoles={["admin"]}><AdminUsers /></ProtectedRoute>} />
-      <Route path="/admin/reports" element={<ProtectedRoute allowedRoles={["admin"]}><AdminReports /></ProtectedRoute>} />
-      <Route path="/admin/settings" element={<ProtectedRoute allowedRoles={["admin"]}><AdminSettings /></ProtectedRoute>} />
+      <Route path="/admin" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
+      <Route path="/admin/approvals" element={<AdminProtectedRoute><AdminApprovals /></AdminProtectedRoute>} />
+      <Route path="/admin/complaints" element={<AdminProtectedRoute><AdminComplaints /></AdminProtectedRoute>} />
+      <Route path="/admin/departments" element={<AdminProtectedRoute><AdminDepartments /></AdminProtectedRoute>} />
+      <Route path="/admin/users" element={<AdminProtectedRoute><AdminUsers /></AdminProtectedRoute>} />
+      <Route path="/admin/reports" element={<AdminProtectedRoute><AdminReports /></AdminProtectedRoute>} />
+      <Route path="/admin/settings" element={<AdminProtectedRoute><AdminSettings /></AdminProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   </>
