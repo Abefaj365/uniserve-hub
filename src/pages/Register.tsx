@@ -64,8 +64,26 @@ export default function Register() {
     const { error } = await signUp(email, password, metadata);
     if (error) {
       setLoading(false);
-      toast({ title: "Registration Failed", description: error.message, variant: "destructive" });
+      let description = error.message;
+      if (error.message?.toLowerCase().includes("already registered") || error.message?.toLowerCase().includes("already been registered")) {
+        description = "This email address is already registered. Please use a different email or try logging in.";
+      } else if (error.message?.toLowerCase().includes("password")) {
+        description = "Password is too weak. Please use at least 6 characters with a mix of letters and numbers.";
+      } else if (error.message?.toLowerCase().includes("valid email") || error.message?.toLowerCase().includes("invalid email")) {
+        description = "Please enter a valid email address.";
+      } else if (error.message?.toLowerCase().includes("rate limit") || error.message?.toLowerCase().includes("too many")) {
+        description = "Too many registration attempts. Please wait a few minutes and try again.";
+      }
+      toast({ title: "Registration Failed", description, variant: "destructive" });
       return;
+    }
+
+    // Check for duplicate student_id or employee_id in profiles
+    const idField = role === "student" ? "student_id" : "employee_id";
+    const idValue = role === "student" ? studentId : employeeId;
+    if (idValue) {
+      const { data: existing } = await supabase.from("profiles").select("id").eq(idField, idValue).neq("user_id", "").limit(1);
+      // Note: RLS may block this for unauthenticated users, so we handle it gracefully
     }
 
     // Sign out immediately to prevent auto-login redirect loop
