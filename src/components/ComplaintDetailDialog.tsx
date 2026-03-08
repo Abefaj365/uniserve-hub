@@ -79,11 +79,24 @@ export default function ComplaintDetailDialog({ complaint, open, onOpenChange }:
     enabled: !!complaint?.user_id && open,
   });
 
+  const { data: existingFeedback } = useQuery({
+    queryKey: ["my-feedback", complaint?.id, user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("feedback")
+        .select("rating, comment")
+        .eq("complaint_id", complaint!.id)
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!complaint?.id && !!user?.id && role === "student" && open,
+  });
+
   if (!complaint) return null;
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+  const canLeaveFeedback = role === "student" && (complaint.status === "Resolved" || complaint.status === "Closed");
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
