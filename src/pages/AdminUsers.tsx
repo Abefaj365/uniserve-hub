@@ -63,12 +63,30 @@ export default function AdminUsers() {
     },
   });
 
+  const updateApproval = useMutation({
+    mutationFn: async ({ userId, status }: { userId: string; status: string }) => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ approval_status: status } as any)
+        .eq("user_id", userId);
+      if (error) throw error;
+    },
+    onSuccess: (_, { status }) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: ["pending-approvals"] });
+      toast({
+        title: status === "approved" ? "User Approved" : "User Rejected",
+        description: status === "approved"
+          ? "The user can now log in and use the system."
+          : "The user registration has been rejected.",
+      });
+    },
+  });
+
   const deleteUser = useMutation({
     mutationFn: async (userId: string) => {
-      // Delete profile (cascade will handle related data)
       const { error } = await supabase.from("profiles").delete().eq("user_id", userId);
       if (error) throw error;
-      // Delete role
       await supabase.from("user_roles").delete().eq("user_id", userId);
     },
     onSuccess: () => {
