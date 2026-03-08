@@ -1,11 +1,15 @@
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import { StatusBadge, PriorityBadge } from "@/components/StatusBadge";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FileText, Calendar, User, Building2, Tag, AlertTriangle, Clock, Paperclip } from "lucide-react";
+import { FileText, Calendar, User, Building2, Tag, AlertTriangle, Clock, Paperclip, Star } from "lucide-react";
+import FeedbackDialog from "./FeedbackDialog";
 
 interface Complaint {
   id: string;
