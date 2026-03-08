@@ -85,9 +85,17 @@ export default function SubmitComplaint() {
     navigate("/student/complaints");
   };
 
+  const isApproved = profile?.approval_status === "approved";
+
   return (
     <DashboardLayout role="student" title="Submit Complaint">
       <div className="max-w-2xl animate-fade-in">
+        {!isApproved && (
+          <div className="mb-6 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
+            <p className="font-semibold">Account Pending Approval</p>
+            <p>Your account has not been approved by an administrator yet. You cannot submit complaints until your registration is approved.</p>
+          </div>
+        )}
         <Card className="border-border/50 shadow-sm">
           <CardHeader>
             <CardTitle className="font-display text-xl">New Complaint / Service Request</CardTitle>
@@ -147,7 +155,7 @@ export default function SubmitComplaint() {
                 )}
               </div>
               <div className="flex gap-3 pt-2">
-                <Button type="submit" className="flex-1" disabled={loading}>
+                <Button type="submit" className="flex-1" disabled={loading || !isApproved}>
                   {loading ? "Submitting..." : "Submit Complaint"}
                 </Button>
                 <Button type="button" variant="outline" onClick={() => navigate("/student")}>Cancel</Button>
