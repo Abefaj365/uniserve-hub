@@ -1,7 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
-import { GraduationCap, LayoutDashboard, FileText, PlusCircle, BarChart3, Users, Building2, Settings, LogOut, ClipboardList, ShieldCheck } from "lucide-react";
+import { GraduationCap, LayoutDashboard, FileText, PlusCircle, BarChart3, Users, Building2, Settings, LogOut, ClipboardList, ShieldCheck, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotifications } from "@/hooks/useNotifications";
 import type { UserRole } from "@/lib/mockData";
 
 const menuItems: Record<UserRole, { label: string; icon: React.ElementType; path: string }[]> = {
@@ -28,6 +29,7 @@ const menuItems: Record<UserRole, { label: string; icon: React.ElementType; path
 export default function DashboardSidebar({ role }: { role: UserRole }) {
   const location = useLocation();
   const { signOut } = useAuth();
+  const { unreadCount } = useNotifications(role);
   const items = menuItems[role];
   const roleLabel = role === "student" ? "Student" : role === "officer" ? "Department Officer" : "Administrator";
 
@@ -47,6 +49,7 @@ export default function DashboardSidebar({ role }: { role: UserRole }) {
       <nav className="flex-1 space-y-1 px-3">
         {items.map((item) => {
           const isActive = location.pathname === item.path;
+          const showBadge = role === "admin" && item.path === "/admin/approvals" && unreadCount > 0;
           return (
             <Link
               key={item.path}
@@ -58,7 +61,12 @@ export default function DashboardSidebar({ role }: { role: UserRole }) {
               }`}
             >
               <item.icon className="h-4 w-4" />
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {showBadge && (
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground px-1">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
             </Link>
           );
         })}
