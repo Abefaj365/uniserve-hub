@@ -27,19 +27,19 @@ export default function AdminComplaints() {
     enabled: !!user,
   });
 
-  const handleStatusChange = async (complaintId: string, newStatus: string) => {
+  const handleStatusChange = async (complaintId: string, newStatus: string, note?: string) => {
     const complaint = complaints?.find(c => c.id === complaintId);
     const { error } = await supabase.from("complaints").update({ status: newStatus as any }).eq("id", complaintId);
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
       return;
     }
-    // Log status change
     await supabase.from("complaint_status_history").insert({
       complaint_id: complaintId,
       old_status: complaint?.status as any,
       new_status: newStatus as any,
       changed_by: user!.id,
+      note: note || null,
     });
     toast({ title: "Status Updated" });
     refetch();
