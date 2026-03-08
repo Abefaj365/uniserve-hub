@@ -155,7 +155,7 @@ export default function SubmitComplaint() {
                 )}
               </div>
               <div className="flex gap-3 pt-2">
-                <Button type="submit" className="flex-1" disabled={loading}>
+                <Button type="submit" className="flex-1" disabled={loading || !isApproved}>
                   {loading ? "Submitting..." : "Submit Complaint"}
                 </Button>
                 <Button type="button" variant="outline" onClick={() => navigate("/student")}>Cancel</Button>
