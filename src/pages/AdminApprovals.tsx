@@ -44,19 +44,28 @@ export default function AdminApprovals() {
 
   const updateStatus = useMutation({
     mutationFn: async ({ userId, status }: { userId: string; status: string }) => {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ approval_status: status } as any)
-        .eq("user_id", userId);
-      if (error) throw error;
+      if (status === "rejected") {
+        // Delete the user entirely so they can re-register
+        const { data, error } = await supabase.functions.invoke("delete-rejected-user", {
+          body: { userId },
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+      } else {
+        const { error } = await supabase
+          .from("profiles")
+          .update({ approval_status: status } as any)
+          .eq("user_id", userId);
+        if (error) throw error;
+      }
     },
     onSuccess: (_, { status }) => {
       queryClient.invalidateQueries({ queryKey: ["pending-approvals"] });
       toast({
-        title: status === "approved" ? "Student Approved" : "Student Rejected",
+        title: status === "approved" ? "User Approved" : "User Rejected",
         description: status === "approved"
-          ? "The student can now log in and use the system."
-          : "The student registration has been rejected.",
+          ? "The user can now log in and use the system."
+          : "The registration has been rejected. They can register again.",
       });
     },
   });
