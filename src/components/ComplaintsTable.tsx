@@ -4,6 +4,9 @@ import { StatusBadge, PriorityBadge } from "./StatusBadge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import ComplaintDetailDialog from "./ComplaintDetailDialog";
 
 interface ComplaintRow {
@@ -24,12 +27,30 @@ interface ComplaintRow {
 
 interface Props {
   data: ComplaintRow[];
-  onStatusChange?: (id: string, status: string) => void;
+  onStatusChange?: (id: string, status: string, note?: string) => void;
   showActions?: boolean;
 }
 
 export default function ComplaintsTable({ data, onStatusChange, showActions }: Props) {
   const [selectedComplaint, setSelectedComplaint] = useState<ComplaintRow | null>(null);
+  const [statusChangeDialog, setStatusChangeDialog] = useState<{ id: string; newStatus: string; title: string } | null>(null);
+  const [statusNote, setStatusNote] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleStatusSelect = (id: string, newStatus: string) => {
+    const complaint = data.find(c => c.id === id);
+    setStatusChangeDialog({ id, newStatus, title: complaint?.title || "" });
+    setStatusNote("");
+  };
+
+  const handleConfirmStatusChange = async () => {
+    if (!statusChangeDialog || !onStatusChange) return;
+    setSubmitting(true);
+    await onStatusChange(statusChangeDialog.id, statusChangeDialog.newStatus, statusNote.trim() || undefined);
+    setSubmitting(false);
+    setStatusChangeDialog(null);
+    setStatusNote("");
+  };
 
   return (
     <>
@@ -72,7 +93,7 @@ export default function ComplaintsTable({ data, onStatusChange, showActions }: P
                         View
                       </Button>
                       {onStatusChange && (
-                        <Select value={c.status} onValueChange={(val) => onStatusChange(c.id, val)}>
+                        <Select value={c.status} onValueChange={(val) => handleStatusSelect(c.id, val)}>
                           <SelectTrigger className="w-32 h-8 text-xs"><SelectValue /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="Pending">Pending</SelectItem>
@@ -90,6 +111,38 @@ export default function ComplaintsTable({ data, onStatusChange, showActions }: P
           </TableBody>
         </Table>
       </div>
+
+      {/* Status Change Note Dialog */}
+      <Dialog open={!!statusChangeDialog} onOpenChange={(open) => { if (!open) setStatusChangeDialog(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Update Status</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Changing status of <span className="font-medium text-foreground">"{statusChangeDialog?.title}"</span> to{" "}
+              <span className="font-medium text-foreground">{statusChangeDialog?.newStatus}</span>.
+            </p>
+            <div className="space-y-2">
+              <Label htmlFor="status-note">Message / Note (optional)</Label>
+              <Textarea
+                id="status-note"
+                placeholder="Add a message for the student about this status change..."
+                value={statusNote}
+                onChange={(e) => setStatusNote(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setStatusChangeDialog(null)} disabled={submitting}>Cancel</Button>
+            <Button onClick={handleConfirmStatusChange} disabled={submitting}>
+              {submitting ? "Updating..." : "Confirm"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <ComplaintDetailDialog
         complaint={selectedComplaint}
         open={!!selectedComplaint}
