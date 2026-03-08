@@ -25,12 +25,18 @@ export default function AdminApprovals() {
   const { data: pendingUsers, isLoading } = useQuery({
     queryKey: ["pending-approvals"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: profiles, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("approval_status", "pending");
       if (error) throw error;
-      return data;
+      // Fetch roles
+      const userIds = profiles.map(p => p.user_id);
+      const { data: roles } = await supabase.from("user_roles").select("*").in("user_id", userIds);
+      return profiles.map(p => ({
+        ...p,
+        role: roles?.find(r => r.user_id === p.user_id)?.role ?? "student",
+      }));
     },
     enabled: !!user,
   });
