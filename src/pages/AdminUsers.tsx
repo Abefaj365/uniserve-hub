@@ -30,9 +30,13 @@ export default function AdminUsers() {
   const { data: users, isLoading } = useQuery({
     queryKey: ["admin-users"],
     queryFn: async () => {
-      const { data: profiles, error } = await supabase.from("profiles").select("*");
+      const { data: profiles, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .neq("approval_status", "rejected");
       if (error) throw error;
       const userIds = profiles.map(p => p.user_id);
+      if (userIds.length === 0) return [];
       const { data: roles } = await supabase.from("user_roles").select("*").in("user_id", userIds);
       return profiles.map(p => ({
         ...p,

@@ -49,9 +49,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Delete profile, user_roles, and then the auth user
+    // Update profile status to rejected (keep profile data for rejected panel)
+    await supabaseAdmin
+      .from("profiles")
+      .update({ approval_status: "rejected" })
+      .eq("user_id", userId);
+
+    // Delete user_roles and auth user so they can re-register
     await supabaseAdmin.from("user_roles").delete().eq("user_id", userId);
-    await supabaseAdmin.from("profiles").delete().eq("user_id", userId);
     const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
 
     if (error) {
