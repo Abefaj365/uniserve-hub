@@ -208,6 +208,36 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          link: string | null
+          message: string
+          recipient_role: Database["public"]["Enums"]["app_role"]
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          message: string
+          recipient_role?: Database["public"]["Enums"]["app_role"]
+          title: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          message?: string
+          recipient_role?: Database["public"]["Enums"]["app_role"]
+          title?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           approval_status: string
