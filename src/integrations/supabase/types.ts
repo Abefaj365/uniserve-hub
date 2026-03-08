@@ -213,6 +213,7 @@ export type Database = {
           created_at: string
           department: string | null
           email: string | null
+          employee_id: string | null
           full_name: string
           id: string
           student_id: string | null
@@ -223,6 +224,7 @@ export type Database = {
           created_at?: string
           department?: string | null
           email?: string | null
+          employee_id?: string | null
           full_name?: string
           id?: string
           student_id?: string | null
@@ -233,6 +235,7 @@ export type Database = {
           created_at?: string
           department?: string | null
           email?: string | null
+          employee_id?: string | null
           full_name?: string
           id?: string
           student_id?: string | null
