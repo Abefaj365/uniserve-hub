@@ -63,7 +63,10 @@ export default function Register() {
       toast({ title: "Registration Failed", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Registration Successful!", description: "Please check your email to verify your account, then log in." });
+    const desc = role === "student"
+      ? "Your registration is pending admin approval. You will be able to log in once an administrator approves your account."
+      : "Please check your email to verify your account, then log in.";
+    toast({ title: "Registration Submitted!", description: desc });
     navigate("/login");
   };
 

@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { GraduationCap, LayoutDashboard, FileText, PlusCircle, BarChart3, Users, Building2, Settings, LogOut, ClipboardList } from "lucide-react";
+import { GraduationCap, LayoutDashboard, FileText, PlusCircle, BarChart3, Users, Building2, Settings, LogOut, ClipboardList, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import type { UserRole } from "@/lib/mockData";
@@ -16,6 +16,7 @@ const menuItems: Record<UserRole, { label: string; icon: React.ElementType; path
   ],
   admin: [
     { label: "Dashboard", icon: LayoutDashboard, path: "/admin" },
+    { label: "Student Approvals", icon: ShieldCheck, path: "/admin/approvals" },
     { label: "All Complaints", icon: FileText, path: "/admin/complaints" },
     { label: "Departments", icon: Building2, path: "/admin/departments" },
     { label: "Users", icon: Users, path: "/admin/users" },
