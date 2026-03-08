@@ -139,6 +139,15 @@ export default function AdminUsers() {
                           <div className="flex gap-2">
                             <Button
                               size="sm"
+                              variant="outline"
+                              className="h-8 gap-1"
+                              onClick={() => setSelectedUser(u)}
+                            >
+                              <Eye className="h-3.5 w-3.5" />
+                              View
+                            </Button>
+                            <Button
+                              size="sm"
                               variant={isBanned ? "outline" : "secondary"}
                               className="h-8 gap-1"
                               onClick={() => banUser.mutate({ userId: u.user_id, currentStatus: u.approval_status })}
@@ -185,5 +194,11 @@ export default function AdminUsers() {
         )}
       </div>
     </DashboardLayout>
+    <UserDetailDialog
+      user={selectedUser}
+      open={!!selectedUser}
+      onOpenChange={(open) => { if (!open) setSelectedUser(null); }}
+    />
+    </>
   );
 }
