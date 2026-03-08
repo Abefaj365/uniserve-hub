@@ -32,7 +32,7 @@ export default function StudentComplaints() {
         {isLoading ? (
           <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-12 w-full" />)}</div>
         ) : complaints && complaints.length > 0 ? (
-          <ComplaintsTable data={complaints} />
+          <ComplaintsTable data={complaints} showActions />
         ) : (
           <div className="text-center py-12 text-muted-foreground">
             <p>You haven't submitted any complaints yet.</p>
