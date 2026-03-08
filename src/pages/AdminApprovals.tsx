@@ -47,11 +47,11 @@ export default function AdminApprovals() {
   });
 
   return (
-    <DashboardLayout role="admin" title="Student Approvals">
+    <DashboardLayout role="admin" title="User Approvals">
       <div className="space-y-6 animate-fade-in">
         <div className="flex items-center gap-2 text-muted-foreground text-sm">
           <Clock className="h-4 w-4" />
-          <span>Students below are waiting for your approval to access the system.</span>
+          <span>Users below are waiting for your approval to access the system.</span>
         </div>
 
         {isLoading ? (
