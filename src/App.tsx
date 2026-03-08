@@ -30,19 +30,26 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 function ProtectedRoute({ children, allowedRoles }: { children: React.ReactNode; allowedRoles: string[] }) {
-  const { user, role, isLoading } = useAuth();
+  const { user, role, profile, isLoading, signOut } = useAuth();
   if (isLoading) return <div className="flex items-center justify-center min-h-screen text-muted-foreground">Loading...</div>;
   if (!user) return <Navigate to="/login" replace />;
+  if (profile && profile.approval_status !== "approved") {
+    signOut();
+    return <Navigate to="/login" replace />;
+  }
   if (role && !allowedRoles.includes(role)) return <Navigate to="/" replace />;
   return <>{children}</>;
 }
 
 function AdminProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, role, isLoading } = useAuth();
+  const { user, role, profile, isLoading, signOut } = useAuth();
   if (isLoading) return <div className="flex items-center justify-center min-h-screen text-muted-foreground">Loading...</div>;
   if (!user) return <Navigate to="/login" replace />;
+  if (profile && profile.approval_status !== "approved") {
+    signOut();
+    return <Navigate to="/login" replace />;
+  }
   if (role !== "admin") return <Navigate to="/" replace />;
-  // MFA gate is handled inside AdminMFAGate wrapper
   return <AdminMFAGate>{children}</AdminMFAGate>;
 }
 
