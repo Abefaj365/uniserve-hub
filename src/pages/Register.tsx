@@ -36,7 +36,6 @@ export default function Register() {
     queryFn: async () => {
       const { data, error } = await supabase.from("departments").select("*");
       if (error) throw error;
-      // Filter out service/complaint departments - only show academic faculties
       const academicDepts = ["Computer Science & Engineering (CSE)", "Electrical & Electronic Engineering (EEE)", "Business Administration (BBA)", "Law (LLB)", "English", "Pharmacy", "Economics"];
       return data.filter(d => academicDepts.includes(d.name));
     },
@@ -122,17 +121,19 @@ export default function Register() {
               <Input type="email" placeholder="your@bgctub.ac.bd" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
 
-            <div className="space-y-2">
-              <Label>Department / Faculty</Label>
-              <Select value={department} onValueChange={setDepartment}>
-                <SelectTrigger><SelectValue placeholder="Select department" /></SelectTrigger>
-                <SelectContent>
-                  {departments?.map((d) => (
-                    <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {role === "student" && (
+              <div className="space-y-2">
+                <Label>Department / Faculty</Label>
+                <Select value={department} onValueChange={setDepartment}>
+                  <SelectTrigger><SelectValue placeholder="Select department" /></SelectTrigger>
+                  <SelectContent>
+                    {departments?.map((d) => (
+                      <SelectItem key={d.id} value={d.name}>{d.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label>Password</Label>
