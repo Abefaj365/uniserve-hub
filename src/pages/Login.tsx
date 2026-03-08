@@ -8,6 +8,10 @@ import { GraduationCap } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import MFASetup from "@/components/MFASetup";
+import MFAVerify from "@/components/MFAVerify";
+
+type MFAState = "none" | "setup" | "verify";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -16,6 +20,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [mfaState, setMfaState] = useState<MFAState>("none");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +32,7 @@ export default function Login() {
       return;
     }
 
-    // Check approval status for ALL roles
+    // Check approval status
     const { data: { user: loggedInUser } } = await supabase.auth.getUser();
     if (loggedInUser) {
       const { data: profile } = await supabase.from("profiles").select("approval_status").eq("user_id", loggedInUser.id).single();
@@ -43,11 +48,57 @@ export default function Login() {
         toast({ title: "Access Denied", description: statusMsg, variant: "destructive" });
         return;
       }
+
+      // Check if user is admin - enforce 2FA
+      const { data: roleData } = await supabase.from("user_roles").select("role").eq("user_id", loggedInUser.id).single();
+      
+      if (roleData?.role === "admin") {
+        // Check MFA factors
+        const { data: factors } = await supabase.auth.mfa.listFactors();
+        const verifiedFactors = factors?.totp?.filter(f => f.status === "verified") ?? [];
+        
+        if (verifiedFactors.length === 0) {
+          // Admin needs to set up 2FA
+          setLoading(false);
+          setMfaState("setup");
+          return;
+        } else {
+          // Admin has 2FA, needs to verify
+          setLoading(false);
+          setMfaState("verify");
+          return;
+        }
+      }
     }
 
     setLoading(false);
     toast({ title: "Login Successful", description: "Redirecting to your dashboard..." });
   };
+
+  const handleMFASetupComplete = () => {
+    setMfaState("none");
+    toast({ title: "Login Successful", description: "2FA is now enabled. Redirecting..." });
+    // Auth state change will handle redirect
+  };
+
+  const handleMFAVerified = () => {
+    setMfaState("none");
+    toast({ title: "Login Successful", description: "Redirecting to your dashboard..." });
+    // Auth state change will handle redirect
+  };
+
+  const handleMFACancel = async () => {
+    await supabase.auth.signOut();
+    setMfaState("none");
+  };
+
+  if (mfaState === "setup") {
+    return <MFASetup onComplete={handleMFASetupComplete} />;
+  }
+
+  if (mfaState === "verify") {
+    return <MFAVerify onVerified={handleMFAVerified} onCancel={handleMFACancel} />;
+  }
 
   return (
     <div className="flex min-h-[calc(100vh-64px)] items-center justify-center py-12 px-4">
