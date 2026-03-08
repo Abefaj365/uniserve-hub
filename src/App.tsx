@@ -12,6 +12,7 @@ import Documentation from "./pages/Documentation";
 import StudentDashboard from "./pages/StudentDashboard";
 import SubmitComplaint from "./pages/SubmitComplaint";
 import StudentComplaints from "./pages/StudentComplaints";
+import AllComplaints from "./pages/AllComplaints";
 import OfficerDashboard from "./pages/OfficerDashboard";
 import OfficerComplaints from "./pages/OfficerComplaints";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -58,6 +59,7 @@ const AppRoutes = () => (
       <Route path="/student" element={<ProtectedRoute allowedRoles={["student"]}><StudentDashboard /></ProtectedRoute>} />
       <Route path="/student/submit" element={<ProtectedRoute allowedRoles={["student"]}><SubmitComplaint /></ProtectedRoute>} />
       <Route path="/student/complaints" element={<ProtectedRoute allowedRoles={["student"]}><StudentComplaints /></ProtectedRoute>} />
+      <Route path="/student/all-complaints" element={<ProtectedRoute allowedRoles={["student"]}><AllComplaints /></ProtectedRoute>} />
       <Route path="/officer" element={<ProtectedRoute allowedRoles={["officer"]}><OfficerDashboard /></ProtectedRoute>} />
       <Route path="/officer/complaints" element={<ProtectedRoute allowedRoles={["officer"]}><OfficerComplaints /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>} />
