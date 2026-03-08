@@ -26,7 +26,6 @@ export default function Navbar() {
 
         <div className="hidden items-center gap-6 md:flex">
           <Link to="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Home</Link>
-          <Link to="/documentation" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Documentation</Link>
           {user ? (
             <>
               <Link to={dashboardPath} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Dashboard</Link>
