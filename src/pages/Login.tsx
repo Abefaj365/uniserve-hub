@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, Clock, XCircle, Ban } from "lucide-react";
 import PasswordInput from "@/components/PasswordInput";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -22,6 +22,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [mfaState, setMfaState] = useState<MFAState>("none");
+  const [pendingStatus, setPendingStatus] = useState<{ show: boolean; status: string; name: string }>({ show: false, status: "", name: "" });
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,17 +37,12 @@ export default function Login() {
     // Check approval status
     const { data: { user: loggedInUser } } = await supabase.auth.getUser();
     if (loggedInUser) {
-      const { data: profile } = await supabase.from("profiles").select("approval_status").eq("user_id", loggedInUser.id).single();
+      const { data: profile } = await supabase.from("profiles").select("approval_status, full_name").eq("user_id", loggedInUser.id).single();
       
       if (profile?.approval_status !== "approved") {
         await supabase.auth.signOut();
         setLoading(false);
-        const statusMsg = profile?.approval_status === "rejected"
-          ? "Your registration has been rejected by the administrator."
-          : profile?.approval_status === "banned"
-          ? "Your account has been banned. Please contact the administrator."
-          : "Your registration is pending admin approval. Please wait for approval before logging in.";
-        toast({ title: "Access Denied", description: statusMsg, variant: "destructive" });
+        setPendingStatus({ show: true, status: profile?.approval_status || "pending", name: profile?.full_name || "" });
         return;
       }
 
@@ -99,6 +95,33 @@ export default function Login() {
 
   if (mfaState === "verify") {
     return <MFAVerify onVerified={handleMFAVerified} onCancel={handleMFACancel} />;
+  }
+  if (pendingStatus.show) {
+    const statusConfig = {
+      pending: { icon: Clock, color: "text-yellow-500", title: "Registration Pending", message: "Your account is awaiting admin approval. You'll be able to log in once an administrator reviews and approves your registration." },
+      rejected: { icon: XCircle, color: "text-destructive", title: "Registration Rejected", message: "Your registration has been rejected by the administrator. Please contact the admin for more information." },
+      banned: { icon: Ban, color: "text-destructive", title: "Account Banned", message: "Your account has been banned. Please contact the administrator." },
+    }[pendingStatus.status] || { icon: Clock, color: "text-yellow-500", title: "Access Denied", message: "You cannot access the system at this time." };
+    const StatusIcon = statusConfig.icon;
+    return (
+      <div className="flex min-h-[calc(100vh-64px)] items-center justify-center py-12 px-4">
+        <Card className="w-full max-w-md border-border/50 shadow-lg">
+          <CardHeader className="text-center pb-2">
+            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+              <StatusIcon className={`h-7 w-7 ${statusConfig.color}`} />
+            </div>
+            <CardTitle className="font-display text-2xl">{statusConfig.title}</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <p className="text-sm text-muted-foreground">{statusConfig.message}</p>
+            {pendingStatus.name && <p className="text-xs text-muted-foreground">Registered as: <span className="font-medium text-foreground">{pendingStatus.name}</span></p>}
+            <Button variant="outline" className="w-full" onClick={() => setPendingStatus({ show: false, status: "", name: "" })}>
+              Back to Login
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
