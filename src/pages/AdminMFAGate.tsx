@@ -14,7 +14,7 @@ export default function AdminMFAGate({ children }: { children: ReactNode }) {
 
   const checkMFA = async () => {
     // Check current AAL level
-    const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevelAndFactor();
+    const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
     
     if (aalData?.currentLevel === "aal2") {
       // Already verified with 2FA
