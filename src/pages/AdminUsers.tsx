@@ -8,7 +8,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Ban, Trash2, ShieldCheck, Eye } from "lucide-react";
+import { Ban, Trash2, ShieldCheck, Eye, CheckCircle, XCircle } from "lucide-react";
 import UserDetailDialog from "@/components/UserDetailDialog";
 import {
   AlertDialog,
@@ -63,12 +63,30 @@ export default function AdminUsers() {
     },
   });
 
+  const updateApproval = useMutation({
+    mutationFn: async ({ userId, status }: { userId: string; status: string }) => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ approval_status: status } as any)
+        .eq("user_id", userId);
+      if (error) throw error;
+    },
+    onSuccess: (_, { status }) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: ["pending-approvals"] });
+      toast({
+        title: status === "approved" ? "User Approved" : "User Rejected",
+        description: status === "approved"
+          ? "The user can now log in and use the system."
+          : "The user registration has been rejected.",
+      });
+    },
+  });
+
   const deleteUser = useMutation({
     mutationFn: async (userId: string) => {
-      // Delete profile (cascade will handle related data)
       const { error } = await supabase.from("profiles").delete().eq("user_id", userId);
       if (error) throw error;
-      // Delete role
       await supabase.from("user_roles").delete().eq("user_id", userId);
     },
     onSuccess: () => {
@@ -125,7 +143,7 @@ export default function AdminUsers() {
                         {isSelf ? (
                           <span className="text-xs text-muted-foreground">You</span>
                         ) : (
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 flex-wrap">
                             <Button
                               size="sm"
                               variant="outline"
@@ -135,16 +153,41 @@ export default function AdminUsers() {
                               <Eye className="h-3.5 w-3.5" />
                               View
                             </Button>
-                            <Button
-                              size="sm"
-                              variant={isBanned ? "outline" : "secondary"}
-                              className="h-8 gap-1"
-                              onClick={() => banUser.mutate({ userId: u.user_id, currentStatus: u.approval_status })}
-                              disabled={banUser.isPending}
-                            >
-                              {isBanned ? <ShieldCheck className="h-3.5 w-3.5" /> : <Ban className="h-3.5 w-3.5" />}
-                              {isBanned ? "Unban" : "Ban"}
-                            </Button>
+                            {(u.approval_status === "pending" || u.approval_status === "rejected") && (
+                              <Button
+                                size="sm"
+                                className="h-8 gap-1"
+                                onClick={() => updateApproval.mutate({ userId: u.user_id, status: "approved" })}
+                                disabled={updateApproval.isPending}
+                              >
+                                <CheckCircle className="h-3.5 w-3.5" />
+                                Approve
+                              </Button>
+                            )}
+                            {u.approval_status === "pending" && (
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                className="h-8 gap-1"
+                                onClick={() => updateApproval.mutate({ userId: u.user_id, status: "rejected" })}
+                                disabled={updateApproval.isPending}
+                              >
+                                <XCircle className="h-3.5 w-3.5" />
+                                Reject
+                              </Button>
+                            )}
+                            {u.approval_status === "approved" && (
+                              <Button
+                                size="sm"
+                                variant={isBanned ? "outline" : "secondary"}
+                                className="h-8 gap-1"
+                                onClick={() => banUser.mutate({ userId: u.user_id, currentStatus: u.approval_status })}
+                                disabled={banUser.isPending}
+                              >
+                                {isBanned ? <ShieldCheck className="h-3.5 w-3.5" /> : <Ban className="h-3.5 w-3.5" />}
+                                {isBanned ? "Unban" : "Ban"}
+                              </Button>
+                            )}
 
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
