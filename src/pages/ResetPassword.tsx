@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -11,50 +11,69 @@ import { useToast } from "@/hooks/use-toast";
 export default function ResetPassword() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check the hash BEFORE Supabase clears it
-    const hash = window.location.hash;
-    const params = new URLSearchParams(hash.replace("#", "?"));
-    const type = params.get("type");
-    const accessToken = params.get("access_token");
-    const refreshToken = params.get("refresh_token");
-
-    if (type === "recovery" && accessToken) {
-      // Manually set the session so Supabase knows who is resetting
-      supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken || "",
-      }).then(({ error }) => {
+    const exchangeCode = async () => {
+      // Method 1: PKCE flow — code in query params
+      const code = searchParams.get("code");
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (error) {
-          setError("Your reset link is invalid or has expired. Please request a new one.");
+          setErrorMsg("Your reset link is invalid or has expired. Please request a new one.");
         } else {
           setReady(true);
         }
-      });
-    } else {
-      // Fallback: listen for PASSWORD_RECOVERY event
+        return;
+      }
+
+      // Method 2: Implicit flow — tokens in hash
+      const hash = window.location.hash;
+      if (hash) {
+        const params = new URLSearchParams(hash.replace("#", ""));
+        const accessToken = params.get("access_token");
+        const refreshToken = params.get("refresh_token");
+        const type = params.get("type");
+
+        if (type === "recovery" && accessToken) {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken || "",
+          });
+          if (error) {
+            setErrorMsg("Your reset link is invalid or has expired. Please request a new one.");
+          } else {
+            setReady(true);
+          }
+          return;
+        }
+      }
+
+      // Method 3: Listen for PASSWORD_RECOVERY event
       const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
         if (event === "PASSWORD_RECOVERY") {
           setReady(true);
         }
       });
-      // If nothing fires after 3 seconds, show expired message
+
+      // If nothing works after 4 seconds, show error
       const timer = setTimeout(() => {
-        setError("Your reset link is invalid or has expired. Please request a new one.");
-      }, 3000);
+        setErrorMsg("Your reset link is invalid or has expired. Please request a new one.");
+      }, 4000);
 
       return () => {
         subscription.unsubscribe();
         clearTimeout(timer);
       };
-    }
-  }, []);
+    };
+
+    exchangeCode();
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,17 +92,17 @@ export default function ResetPassword() {
       toast({ title: "Error", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Password Updated", description: "Your password has been reset successfully." });
+    await supabase.auth.signOut();
+    toast({ title: "Password Updated", description: "Your password has been reset successfully. Please log in." });
     navigate("/login");
   };
 
-  // Show error state (expired/invalid link)
-  if (error) {
+  if (errorMsg) {
     return (
       <div className="flex min-h-[calc(100vh-64px)] items-center justify-center py-12 px-4">
         <Card className="w-full max-w-md border-border/50 shadow-lg">
           <CardContent className="py-12 text-center">
-            <p className="text-destructive font-medium">{error}</p>
+            <p className="text-destructive font-medium">{errorMsg}</p>
             <Button className="mt-4" variant="outline" onClick={() => navigate("/forgot-password")}>
               Request New Reset Link
             </Button>
@@ -93,7 +112,6 @@ export default function ResetPassword() {
     );
   }
 
-  // Show loading/verifying state
   if (!ready) {
     return (
       <div className="flex min-h-[calc(100vh-64px)] items-center justify-center py-12 px-4">
@@ -107,7 +125,6 @@ export default function ResetPassword() {
     );
   }
 
-  // Show reset form
   return (
     <div className="flex min-h-[calc(100vh-64px)] items-center justify-center py-12 px-4">
       <Card className="w-full max-w-md border-border/50 shadow-lg">
