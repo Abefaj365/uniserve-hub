@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GraduationCap } from "lucide-react";
 import PasswordInput from "@/components/PasswordInput";
@@ -16,20 +15,45 @@ export default function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Listen for the PASSWORD_RECOVERY event
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") {
-        setReady(true);
-      }
-    });
-    // Also check hash for type=recovery
+    // Check the hash BEFORE Supabase clears it
     const hash = window.location.hash;
-    if (hash.includes("type=recovery")) {
-      setReady(true);
+    const params = new URLSearchParams(hash.replace("#", "?"));
+    const type = params.get("type");
+    const accessToken = params.get("access_token");
+    const refreshToken = params.get("refresh_token");
+
+    if (type === "recovery" && accessToken) {
+      // Manually set the session so Supabase knows who is resetting
+      supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken || "",
+      }).then(({ error }) => {
+        if (error) {
+          setError("Your reset link is invalid or has expired. Please request a new one.");
+        } else {
+          setReady(true);
+        }
+      });
+    } else {
+      // Fallback: listen for PASSWORD_RECOVERY event
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+        if (event === "PASSWORD_RECOVERY") {
+          setReady(true);
+        }
+      });
+      // If nothing fires after 3 seconds, show expired message
+      const timer = setTimeout(() => {
+        setError("Your reset link is invalid or has expired. Please request a new one.");
+      }, 3000);
+
+      return () => {
+        subscription.unsubscribe();
+        clearTimeout(timer);
+      };
     }
-    return () => subscription.unsubscribe();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,19 +77,37 @@ export default function ResetPassword() {
     navigate("/login");
   };
 
-  if (!ready) {
+  // Show error state (expired/invalid link)
+  if (error) {
     return (
       <div className="flex min-h-[calc(100vh-64px)] items-center justify-center py-12 px-4">
         <Card className="w-full max-w-md border-border/50 shadow-lg">
-          <CardContent className="py-12 text-center text-muted-foreground">
-            <p>Verifying your reset link...</p>
-            <p className="text-sm mt-2">If this takes too long, your link may have expired.</p>
+          <CardContent className="py-12 text-center">
+            <p className="text-destructive font-medium">{error}</p>
+            <Button className="mt-4" variant="outline" onClick={() => navigate("/forgot-password")}>
+              Request New Reset Link
+            </Button>
           </CardContent>
         </Card>
       </div>
     );
   }
 
+  // Show loading/verifying state
+  if (!ready) {
+    return (
+      <div className="flex min-h-[calc(100vh-64px)] items-center justify-center py-12 px-4">
+        <Card className="w-full max-w-md border-border/50 shadow-lg">
+          <CardContent className="py-12 text-center text-muted-foreground">
+            <p>Verifying your reset link...</p>
+            <p className="text-sm mt-2">Please wait a moment.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show reset form
   return (
     <div className="flex min-h-[calc(100vh-64px)] items-center justify-center py-12 px-4">
       <Card className="w-full max-w-md border-border/50 shadow-lg">
@@ -80,11 +122,23 @@ export default function ResetPassword() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label>New Password</Label>
-              <PasswordInput placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
+              <PasswordInput
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+              />
             </div>
             <div className="space-y-2">
               <Label>Confirm Password</Label>
-              <PasswordInput placeholder="••••••••" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required minLength={6} />
+              <PasswordInput
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={6}
+              />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Updating..." : "Update Password"}
